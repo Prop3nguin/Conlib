@@ -1,2 +1,36 @@
-ConlangDB
-venv
+# ── Virtual environment ────────────────────────────────────────────
+venv/
+.venv/
+env/
+ 
+# ── Environment variables (secrets) ────────────────────────────────
+.env
+# .env.example is NOT ignored — it's the safe template for new users
+ 
+# ── Database (each user generates their own on setup) ───────────────
+*.db
+*.sqlite
+*.sqlite3
+ 
+# ── Flask / Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+instance/
+.flask_session/
+ 
+# ── Exports (generated files, not source) ───────────────────────────
+exports/
+# Remove this line if you want to commit example etymology articles
+ 
+# ── OS clutter ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+ 
+# ── Editor / IDE ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+ 
