@@ -1,7 +1,7 @@
-from flask import Blueprint
+from flask import Blueprint, render_template
 
 export_bp = Blueprint("export", __name__)
 
 @export_bp.route('/')
 def export_home():
-    return '<h1>Export Home</h1>'
+    return render_template('export.html')

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{% block title %}Conlang Library{% endblock %}</title>
+    </head>
+    <body>
+
+        <nav>
+            <a href="/">Languages</a>
+            <a href="/lexicon">Lexicon</a>
+            <a href="/translator">Translator</a>
+            <a href="/export">Export</a>
+        </nav>
+
+        {% block content %}
+        {% endblock %}
+    </body>
+</html>
