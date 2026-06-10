@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, render_template
 
 languages_bp = Blueprint("languages", __name__)
 
