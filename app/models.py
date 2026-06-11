@@ -1,8 +1,13 @@
 """
-models.py — Full schema: Phase 1 + Phase 2
-Phase 1 tables: languages, language_relationships, dialects, scripts, glyphs
-Phase 2 tables: words, morphemes, senses, sense_fields, semantic_fields,
-                pronunciations, inflection_paradigms, word_paradigms, inflected_forms
+models.py — Full schema: Phase 1 + Phase 2 + Phase 3
+Phase 1: languages, language_relationships, dialects, scripts, glyphs
+Phase 2: words, morphemes, senses, sense_fields, semantic_fields,
+         pronunciations, inflection_paradigms, word_paradigms, inflected_forms
+Phase 3: grammar_rules, phonology_rules
+
+Run after editing:
+    flask db migrate -m "phase 3 grammar and phonology rules"
+    flask db upgrade
 """
 
 import enum
@@ -116,12 +121,57 @@ class Register(enum.Enum):
 
 
 class MorphemeType(enum.Enum):
-    root       = "root"
-    prefix     = "prefix"
-    suffix     = "suffix"
-    infix      = "infix"
-    circumfix  = "circumfix"
-    clitic     = "clitic"
+    root      = "root"
+    prefix    = "prefix"
+    suffix    = "suffix"
+    infix     = "infix"
+    circumfix = "circumfix"
+    clitic    = "clitic"
+
+
+# --- Phase 3 ----------------------------------------------------------------
+
+class GrammarRuleType(enum.Enum):
+    """
+    morphology   — inflection, agreement, affixation
+    syntax       — word order, clause structure, embedding
+    phonology    — broad descriptive notes (use PhonologyRule for IPA-precise rules)
+    cv_structure — consonant-vowel syllable templates and phonotactics
+    """
+    morphology   = "morphology"
+    syntax       = "syntax"
+    phonology    = "phonology"
+    cv_structure = "cv_structure"
+
+
+class PhonologyRuleType(enum.Enum):
+    """
+    assimilation  — sound becomes more like a neighbour
+    dissimilation — sound becomes less like a neighbour
+    elision       — sound is deleted
+    insertion     — sound is added (epenthesis)
+    sandhi        — change at morpheme or word boundaries
+    metathesis    — sounds swap positions
+    tone          — tone assignment or tone sandhi
+    other
+    """
+    assimilation  = "assimilation"
+    dissimilation = "dissimilation"
+    elision       = "elision"
+    insertion     = "insertion"
+    sandhi        = "sandhi"
+    metathesis    = "metathesis"
+    tone          = "tone"
+    other         = "other"
+
+
+class RuleScope(enum.Enum):
+    """Where the rule fires."""
+    word_internal     = "word_internal"
+    morpheme_boundary = "morpheme_boundary"
+    word_boundary     = "word_boundary"
+    phrase            = "phrase"
+    clause            = "clause"
 
 
 # ===========================================================================
@@ -146,7 +196,7 @@ class Language(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    # Phase 1 back-refs
+    # Phase 1
     dialects = db.relationship("Dialect", back_populates="language",
                                cascade="all, delete-orphan")
     relationships_as_source = db.relationship(
@@ -162,7 +212,7 @@ class Language(db.Model):
         cascade="all, delete-orphan",
     )
 
-    # Phase 2 back-refs
+    # Phase 2
     words                = db.relationship("Word", back_populates="language",
                                            cascade="all, delete-orphan")
     morphemes            = db.relationship("Morpheme", back_populates="language",
@@ -170,6 +220,11 @@ class Language(db.Model):
     inflection_paradigms = db.relationship("InflectionParadigm",
                                            back_populates="language",
                                            cascade="all, delete-orphan")
+
+    # Phase 3
+    grammar_rules = db.relationship("GrammarRule", back_populates="language",
+                                    cascade="all, delete-orphan",
+                                    order_by="GrammarRule.rule_order")
 
     def __repr__(self):
         return f"<Language {self.name!r} ({self.status.value})>"
@@ -179,7 +234,7 @@ class LanguageRelationship(db.Model):
     """
     Directed edge between two languages.
       borrowing:        source borrowed FROM target
-      common_ancestor:  source and target share a proto-language
+      common_ancestor:  both share a proto-language
       creole:           source is the creole; target is substrate/superstrate
       contact:          mutual influence
       constructed_from: source was built from target
@@ -231,7 +286,7 @@ class Dialect(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    # Phase 1 back-refs
+    # Phase 1
     language = db.relationship("Language", back_populates="dialects")
     parent   = db.relationship("Dialect", remote_side="Dialect.id",
                                back_populates="children")
@@ -240,11 +295,19 @@ class Dialect(db.Model):
     scripts  = db.relationship("Script", back_populates="dialect",
                                cascade="all, delete-orphan")
 
-    # Phase 2 back-refs
+    # Phase 2
     words           = db.relationship("Word", back_populates="dialect")
     pronunciations  = db.relationship("Pronunciation", back_populates="dialect",
                                       cascade="all, delete-orphan")
     inflected_forms = db.relationship("InflectedForm", back_populates="dialect")
+
+    # Phase 3
+    # grammar_rules: no cascade — rules live on Language, dialect link is optional
+    grammar_rules   = db.relationship("GrammarRule", back_populates="dialect")
+    # phonology_rules: cascade — rules are always dialect-owned
+    phonology_rules = db.relationship("PhonologyRule", back_populates="dialect",
+                                      cascade="all, delete-orphan",
+                                      order_by="PhonologyRule.rule_order")
 
     def __repr__(self):
         return f"<Dialect {self.name!r} (lang={self.language_id})>"
@@ -292,8 +355,8 @@ class Script(db.Model):
 class Glyph(db.Model):
     """
     One atomic character in a script.
-    script_code is the stable app-internal identifier referenced by words
-    and inflected forms (soft FK — not enforced at DB level).
+    script_code is the stable app-internal identifier — a soft FK referenced
+    by words and inflected_forms (not DB-enforced).
     """
     __tablename__ = "glyphs"
 
@@ -327,12 +390,8 @@ class Glyph(db.Model):
 class Word(db.Model):
     """
     A lexical entry at the language level.
-
-    dialect_id is nullable — NULL means the word is shared across all dialects.
-    Set it only for dialect-exclusive vocabulary (regional slang, archaic forms).
-
-    script_code is a soft FK into glyphs.script_code for the primary written
-    form.  Dialect-specific written realisations live in InflectedForm.
+    dialect_id = NULL → shared across all dialects.
+    script_code → soft FK into glyphs.script_code, validated at route level.
     """
     __tablename__ = "words"
 
@@ -344,10 +403,10 @@ class Word(db.Model):
 
     lemma        = db.Column(db.String(255), nullable=False)
     romanization = db.Column(db.String(255))
-    script_code  = db.Column(db.String(40))   # soft FK → glyphs.script_code
+    script_code  = db.Column(db.String(40))
 
     pos         = db.Column(db.Enum(PartOfSpeech), nullable=False)
-    pos_subtype = db.Column(db.String(80))    # e.g. "transitive", "animate", "mass noun"
+    pos_subtype = db.Column(db.String(80))
     register    = db.Column(db.Enum(Register), nullable=False, default=Register.neutral)
 
     notes      = db.Column(db.Text)
@@ -374,9 +433,8 @@ class Word(db.Model):
 class Morpheme(db.Model):
     """
     First-class morpheme entry — roots, affixes, clitics.
-
-    form        — canonical shape, e.g. "-ek", "vel-", "-al-"
-    gloss       — Leipzig-style label, e.g. "PL", "PAST", "CAUS"
+    form        — canonical shape, e.g. "-ek", "vel-"
+    gloss       — Leipzig label, e.g. "PL", "PAST", "CAUS"
     script_code — soft FK → glyphs.script_code
     """
     __tablename__ = "morphemes"
@@ -406,19 +464,13 @@ class Morpheme(db.Model):
         return f"<Morpheme {self.form!r} [{self.morpheme_type.value}] gloss={self.gloss!r}>"
 
 
-# ---------------------------------------------------------------------------
-# Senses + semantic fields
-# ---------------------------------------------------------------------------
-
-# Junction table — no model class; accessed via secondary= on both sides
+# Junction: senses ↔ semantic_fields
 sense_fields = db.Table(
     "sense_fields",
     db.Column("sense_id", db.Integer,
-              db.ForeignKey("senses.id", ondelete="CASCADE"),
-              primary_key=True),
+              db.ForeignKey("senses.id", ondelete="CASCADE"), primary_key=True),
     db.Column("semantic_field_id", db.Integer,
-              db.ForeignKey("semantic_fields.id", ondelete="CASCADE"),
-              primary_key=True),
+              db.ForeignKey("semantic_fields.id", ondelete="CASCADE"), primary_key=True),
 )
 
 
@@ -431,10 +483,9 @@ class Sense(db.Model):
     sense_order = db.Column(db.Integer, nullable=False, default=1)
 
     definition          = db.Column(db.Text, nullable=False)
-    example_sentence    = db.Column(db.Text)   # in the conlang
-    example_translation = db.Column(db.Text)   # English gloss
-
-    notes = db.Column(db.Text)
+    example_sentence    = db.Column(db.Text)
+    example_translation = db.Column(db.Text)
+    notes               = db.Column(db.Text)
 
     word            = db.relationship("Word", back_populates="senses")
     semantic_fields = db.relationship("SemanticField",
@@ -442,8 +493,7 @@ class Sense(db.Model):
                                       back_populates="senses")
 
     def __repr__(self):
-        preview = (self.definition or "")[:40]
-        return f"<Sense word={self.word_id} order={self.sense_order} {preview!r}>"
+        return f"<Sense word={self.word_id} order={self.sense_order} {(self.definition or '')[:40]!r}>"
 
 
 class SemanticField(db.Model):
@@ -465,15 +515,8 @@ class SemanticField(db.Model):
         return f"<SemanticField {self.name!r}>"
 
 
-# ---------------------------------------------------------------------------
-# Pronunciations
-# ---------------------------------------------------------------------------
-
 class Pronunciation(db.Model):
-    """
-    One IPA record per word per dialect.
-    romanization here may differ from word.romanization (dialect shift).
-    """
+    """One IPA record per word per dialect."""
     __tablename__ = "pronunciations"
 
     id         = db.Column(db.Integer, primary_key=True)
@@ -498,16 +541,8 @@ class Pronunciation(db.Model):
         return f"<Pronunciation word={self.word_id} dialect={self.dialect_id} /{self.ipa}/>"
 
 
-# ---------------------------------------------------------------------------
-# Inflection paradigms, word_paradigms, inflected forms
-# ---------------------------------------------------------------------------
-
 class InflectionParadigm(db.Model):
-    """
-    Named inflection template, e.g. "Class I Verb", "Animate Noun".
-    Scoped to a language; individual slot realisations are dialect-aware
-    via InflectedForm.
-    """
+    """Named inflection template, e.g. 'Class I Verb', 'Animate Noun'."""
     __tablename__ = "inflection_paradigms"
 
     id          = db.Column(db.Integer, primary_key=True)
@@ -543,12 +578,9 @@ class WordParadigm(db.Model):
 
 class InflectedForm(db.Model):
     """
-    One realised form of a word in a paradigm slot.
-
-    form_label  — slot name, e.g. "1SG.PRES", "NOM.PL", "IMPERATIVE"
-    form        — romanized surface form
-    script_code — soft FK → glyphs.script_code
-    dialect_id  — NULL = applies to all dialects; set for dialect-specific forms
+    One realised form per word per paradigm slot.
+    form_label  — slot name e.g. "1SG.PRES", "NOM.PL"
+    dialect_id  — NULL = applies to all dialects
     """
     __tablename__ = "inflected_forms"
 
@@ -576,3 +608,125 @@ class InflectedForm(db.Model):
 
     def __repr__(self):
         return f"<InflectedForm {self.form_label}={self.form!r} word={self.word_id}>"
+
+
+# ===========================================================================
+# Phase 3 — Grammar & Phonology Rules
+# ===========================================================================
+
+class GrammarRule(db.Model):
+    """
+    A single named grammatical rule scoped to a language, optionally a dialect.
+
+    rule_order controls translator sequence within each rule_type (ascending).
+    dialect_id = NULL means the rule applies to all dialects of the language.
+
+    pattern / result format by rule_type:
+      morphology:   pattern = structural description, result = output template
+      syntax:       pattern = default constituent order, result = exceptions
+      phonology:    broad notes only — use PhonologyRule for IPA-precise rules
+      cv_structure: pattern = template ("CVC", "CVCC"), result = restrictions
+
+    is_active allows disabling a rule without deleting it — useful when
+    testing translator output with a rule temporarily switched off.
+    """
+    __tablename__ = "grammar_rules"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    language_id = db.Column(db.Integer, db.ForeignKey("languages.id",
+                            ondelete="CASCADE"), nullable=False)
+    dialect_id  = db.Column(db.Integer, db.ForeignKey("dialects.id",
+                            ondelete="SET NULL"), nullable=True)
+
+    name       = db.Column(db.String(200), nullable=False)
+    rule_type  = db.Column(db.Enum(GrammarRuleType), nullable=False)
+    rule_order = db.Column(db.Integer, nullable=False, default=100)
+
+    pattern    = db.Column(db.Text)   # structural input description
+    result     = db.Column(db.Text)   # output or transformation
+    example    = db.Column(db.Text)   # illustrative romanized example
+    notes      = db.Column(db.Text)
+
+    is_active  = db.Column(db.Boolean, nullable=False, default=True)
+
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    language = db.relationship("Language", back_populates="grammar_rules")
+    dialect  = db.relationship("Dialect",  back_populates="grammar_rules")
+
+    __table_args__ = (
+        db.Index("ix_grammar_rules_lang_type_order",
+                 "language_id", "rule_type", "rule_order"),
+    )
+
+    def __repr__(self):
+        return (f"<GrammarRule [{self.rule_type.value}] order={self.rule_order} "
+                f"{self.name!r}>")
+
+
+class PhonologyRule(db.Model):
+    """
+    An IPA-precise phonological rule, always scoped to a dialect.
+
+    Rules with the same rule_order are unordered relative to each other —
+    avoid ties where sequence matters (e.g. feeding/bleeding pairs).
+
+    IPA fields:
+      input_ipa   — sound or class being changed, e.g. "k", "[+velar]", "V"
+      output_ipa  — result; empty string = deletion/elision
+      environment — standard phonological context notation:
+                    "_ [+front vowel]"   (before a front vowel)
+                    "C _"                (after any consonant)
+                    "# _"                (word-initial position)
+                    "_ #"                (word-final position)
+                    NULL = no environment restriction (applies everywhere)
+
+    formal_notation stores optional SPE / OT notation for export.
+
+    is_feeding / is_bleeding are documentation aids only — the translator
+    uses rule_order alone for sequencing.
+    """
+    __tablename__ = "phonology_rules"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    dialect_id = db.Column(db.Integer, db.ForeignKey("dialects.id",
+                           ondelete="CASCADE"), nullable=False)
+
+    name       = db.Column(db.String(200), nullable=False)
+    rule_type  = db.Column(db.Enum(PhonologyRuleType), nullable=False)
+    rule_order = db.Column(db.Integer, nullable=False, default=100)
+
+    # IPA rule specification
+    input_ipa   = db.Column(db.String(120), nullable=False)
+    output_ipa  = db.Column(db.String(120), nullable=False, default="")
+    environment = db.Column(db.String(255))
+
+    # Optional formal notation (SPE / OT) for linguist export
+    formal_notation = db.Column(db.Text)
+
+    scope       = db.Column(db.Enum(RuleScope), default=RuleScope.word_internal)
+
+    # Interaction metadata — documentation only
+    is_feeding  = db.Column(db.Boolean, default=False)
+    is_bleeding = db.Column(db.Boolean, default=False)
+
+    example    = db.Column(db.Text)   # e.g. "/keta/ → [tʃeta] before /e/"
+    notes      = db.Column(db.Text)
+    is_active  = db.Column(db.Boolean, nullable=False, default=True)
+
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    dialect = db.relationship("Dialect", back_populates="phonology_rules")
+
+    __table_args__ = (
+        db.Index("ix_phonology_rules_dialect_order", "dialect_id", "rule_order"),
+    )
+
+    def __repr__(self):
+        env = f" / {self.environment}" if self.environment else ""
+        return (f"<PhonologyRule [{self.rule_type.value}] order={self.rule_order} "
+                f"{self.input_ipa!r} → {self.output_ipa!r}{env}>")

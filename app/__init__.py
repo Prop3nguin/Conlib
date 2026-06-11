@@ -23,8 +23,8 @@ def create_app():
     from app.routes.export import export_bp
 
     app.register_blueprint(languages_bp)
-    app.register_blueprint(lexicon_bp, url_prefix='/lexicon')
-    app.register_blueprint(translator_bp, url_prefix='/translator')
-    app.register_blueprint(export_bp, url_prefix='/export')
+    app.register_blueprint(lexicon_bp)
+    app.register_blueprint(translator_bp)
+    app.register_blueprint(export_bp)
 
     return app
