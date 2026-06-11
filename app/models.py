@@ -1,12 +1,21 @@
 """
-models.py — Full schema: Phase 1 + Phase 2 + Phase 3
+models.py — Full schema: Phases 1–4
 Phase 1: languages, language_relationships, dialects, scripts, glyphs
 Phase 2: words, morphemes, senses, sense_fields, semantic_fields,
          pronunciations, inflection_paradigms, word_paradigms, inflected_forms
 Phase 3: grammar_rules, phonology_rules
+Phase 4: idioms, idiom_words, translation_memory
+
+---- to-do ----
+! - phase 5 will be the translator engine, which doesn't require DB changes but will
+    need to query/apply all these rules and data structures in the right order.
+
+! - phase 6 will be etymology articles, timelines, and sample texts wich
+    may need some new tables but can be added later.
+---------------
 
 Run after editing:
-    flask db migrate -m "phase 3 grammar and phonology rules"
+    flask db migrate -m "phase 4 idioms and translation memory"
     flask db upgrade
 """
 
@@ -132,12 +141,6 @@ class MorphemeType(enum.Enum):
 # --- Phase 3 ----------------------------------------------------------------
 
 class GrammarRuleType(enum.Enum):
-    """
-    morphology   — inflection, agreement, affixation
-    syntax       — word order, clause structure, embedding
-    phonology    — broad descriptive notes (use PhonologyRule for IPA-precise rules)
-    cv_structure — consonant-vowel syllable templates and phonotactics
-    """
     morphology   = "morphology"
     syntax       = "syntax"
     phonology    = "phonology"
@@ -145,16 +148,6 @@ class GrammarRuleType(enum.Enum):
 
 
 class PhonologyRuleType(enum.Enum):
-    """
-    assimilation  — sound becomes more like a neighbour
-    dissimilation — sound becomes less like a neighbour
-    elision       — sound is deleted
-    insertion     — sound is added (epenthesis)
-    sandhi        — change at morpheme or word boundaries
-    metathesis    — sounds swap positions
-    tone          — tone assignment or tone sandhi
-    other
-    """
     assimilation  = "assimilation"
     dissimilation = "dissimilation"
     elision       = "elision"
@@ -166,12 +159,55 @@ class PhonologyRuleType(enum.Enum):
 
 
 class RuleScope(enum.Enum):
-    """Where the rule fires."""
     word_internal     = "word_internal"
     morpheme_boundary = "morpheme_boundary"
     word_boundary     = "word_boundary"
     phrase            = "phrase"
     clause            = "clause"
+
+
+# --- Phase 4 ----------------------------------------------------------------
+
+class IdiomType(enum.Enum):
+    """
+    idiom        — fixed phrase with non-compositional meaning
+                   e.g. "kick the bucket" ≠ kick + bucket
+    collocation  — words that strongly prefer each other's company
+                   e.g. "make a decision" (not "do a decision")
+    proverb      — culturally-transmitted saying with moral/practical meaning
+    greeting     — conventional opener/closer (often opaque to non-speakers)
+    """
+    idiom       = "idiom"
+    collocation = "collocation"
+    proverb     = "proverb"
+    greeting    = "greeting"
+    other       = "other"
+
+
+class TranslationSource(enum.Enum):
+    """
+    How did this translation memory entry get here?
+
+    manual      — hand-entered by the conlang author; highest trust
+    translator  — produced by the rule-based translator engine
+    imported    — bulk-imported from an external source
+    """
+    manual     = "manual"
+    translator = "translator"
+    imported   = "imported"
+
+
+class TranslationStatus(enum.Enum):
+    """
+    Validation status of a translation memory entry.
+
+    approved  — confirmed correct by the author; safe to use for regression
+    draft     — plausible but not yet verified
+    rejected  — known to be wrong; kept for audit trail, never matched
+    """
+    approved = "approved"
+    draft    = "draft"
+    rejected = "rejected"
 
 
 # ===========================================================================
@@ -211,7 +247,6 @@ class Language(db.Model):
         back_populates="target_language",
         cascade="all, delete-orphan",
     )
-
     # Phase 2
     words                = db.relationship("Word", back_populates="language",
                                            cascade="all, delete-orphan")
@@ -220,11 +255,16 @@ class Language(db.Model):
     inflection_paradigms = db.relationship("InflectionParadigm",
                                            back_populates="language",
                                            cascade="all, delete-orphan")
-
     # Phase 3
     grammar_rules = db.relationship("GrammarRule", back_populates="language",
                                     cascade="all, delete-orphan",
                                     order_by="GrammarRule.rule_order")
+    # Phase 4
+    idioms             = db.relationship("Idiom", back_populates="language",
+                                         cascade="all, delete-orphan")
+    translation_memory = db.relationship("TranslationMemory",
+                                         back_populates="language",
+                                         cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Language {self.name!r} ({self.status.value})>"
@@ -294,20 +334,21 @@ class Dialect(db.Model):
                                cascade="all, delete-orphan")
     scripts  = db.relationship("Script", back_populates="dialect",
                                cascade="all, delete-orphan")
-
     # Phase 2
     words           = db.relationship("Word", back_populates="dialect")
     pronunciations  = db.relationship("Pronunciation", back_populates="dialect",
                                       cascade="all, delete-orphan")
     inflected_forms = db.relationship("InflectedForm", back_populates="dialect")
-
     # Phase 3
-    # grammar_rules: no cascade — rules live on Language, dialect link is optional
     grammar_rules   = db.relationship("GrammarRule", back_populates="dialect")
-    # phonology_rules: cascade — rules are always dialect-owned
     phonology_rules = db.relationship("PhonologyRule", back_populates="dialect",
                                       cascade="all, delete-orphan",
                                       order_by="PhonologyRule.rule_order")
+    # Phase 4
+    idioms             = db.relationship("Idiom", back_populates="dialect")
+    translation_memory = db.relationship("TranslationMemory",
+                                         back_populates="dialect",
+                                         cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Dialect {self.name!r} (lang={self.language_id})>"
@@ -341,7 +382,8 @@ class Script(db.Model):
     font_face_name     = db.Column(db.String(120))
     font_file_ref      = db.Column(db.String(255))
     orthographic_notes = db.Column(db.Text)
-    created_at         = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at         = db.Column(db.DateTime,
+                                   default=lambda: datetime.now(timezone.utc))
 
     dialect = db.relationship("Dialect", back_populates="scripts")
     glyphs  = db.relationship("Glyph", back_populates="script",
@@ -365,7 +407,8 @@ class Glyph(db.Model):
                                   ondelete="CASCADE"), nullable=False)
     script_code       = db.Column(db.String(40), nullable=False)
     unicode_codepoint = db.Column(db.String(10))
-    category          = db.Column(db.Enum(GlyphCategory), default=GlyphCategory.letter)
+    category          = db.Column(db.Enum(GlyphCategory),
+                                  default=GlyphCategory.letter)
     romanization      = db.Column(db.String(40))
     ipa_value         = db.Column(db.String(40))
     name              = db.Column(db.String(120))
@@ -380,7 +423,8 @@ class Glyph(db.Model):
     )
 
     def __repr__(self):
-        return f"<Glyph {self.script_code!r} rom={self.romanization!r} ipa={self.ipa_value!r}>"
+        return (f"<Glyph {self.script_code!r} "
+                f"rom={self.romanization!r} ipa={self.ipa_value!r}>")
 
 
 # ===========================================================================
@@ -407,7 +451,8 @@ class Word(db.Model):
 
     pos         = db.Column(db.Enum(PartOfSpeech), nullable=False)
     pos_subtype = db.Column(db.String(80))
-    register    = db.Column(db.Enum(Register), nullable=False, default=Register.neutral)
+    register    = db.Column(db.Enum(Register), nullable=False,
+                            default=Register.neutral)
 
     notes      = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -425,6 +470,8 @@ class Word(db.Model):
                                       cascade="all, delete-orphan")
     word_paradigms  = db.relationship("WordParadigm", back_populates="word",
                                       cascade="all, delete-orphan")
+    # Phase 4 — word may appear in idioms via IdiomWord junction
+    idiom_words     = db.relationship("IdiomWord", back_populates="word")
 
     def __repr__(self):
         return f"<Word {self.lemma!r} ({self.pos.value})>"
@@ -461,7 +508,8 @@ class Morpheme(db.Model):
     language = db.relationship("Language", back_populates="morphemes")
 
     def __repr__(self):
-        return f"<Morpheme {self.form!r} [{self.morpheme_type.value}] gloss={self.gloss!r}>"
+        return (f"<Morpheme {self.form!r} "
+                f"[{self.morpheme_type.value}] gloss={self.gloss!r}>")
 
 
 # Junction: senses ↔ semantic_fields
@@ -470,7 +518,8 @@ sense_fields = db.Table(
     db.Column("sense_id", db.Integer,
               db.ForeignKey("senses.id", ondelete="CASCADE"), primary_key=True),
     db.Column("semantic_field_id", db.Integer,
-              db.ForeignKey("semantic_fields.id", ondelete="CASCADE"), primary_key=True),
+              db.ForeignKey("semantic_fields.id", ondelete="CASCADE"),
+              primary_key=True),
 )
 
 
@@ -493,7 +542,8 @@ class Sense(db.Model):
                                       back_populates="senses")
 
     def __repr__(self):
-        return f"<Sense word={self.word_id} order={self.sense_order} {(self.definition or '')[:40]!r}>"
+        preview = (self.definition or "")[:40]
+        return f"<Sense word={self.word_id} order={self.sense_order} {preview!r}>"
 
 
 class SemanticField(db.Model):
@@ -501,8 +551,9 @@ class SemanticField(db.Model):
 
     id              = db.Column(db.Integer, primary_key=True)
     name            = db.Column(db.String(120), nullable=False, unique=True)
-    parent_field_id = db.Column(db.Integer, db.ForeignKey("semantic_fields.id",
-                                ondelete="SET NULL"), nullable=True)
+    parent_field_id = db.Column(db.Integer,
+                                db.ForeignKey("semantic_fields.id",
+                                              ondelete="SET NULL"), nullable=True)
     description     = db.Column(db.Text)
 
     parent   = db.relationship("SemanticField", remote_side="SemanticField.id",
@@ -538,7 +589,8 @@ class Pronunciation(db.Model):
     )
 
     def __repr__(self):
-        return f"<Pronunciation word={self.word_id} dialect={self.dialect_id} /{self.ipa}/>"
+        return (f"<Pronunciation word={self.word_id} "
+                f"dialect={self.dialect_id} /{self.ipa}/>")
 
 
 class InflectionParadigm(db.Model):
@@ -553,7 +605,8 @@ class InflectionParadigm(db.Model):
     pos         = db.Column(db.Enum(PartOfSpeech))
     description = db.Column(db.Text)
 
-    language        = db.relationship("Language", back_populates="inflection_paradigms")
+    language        = db.relationship("Language",
+                                      back_populates="inflection_paradigms")
     word_paradigms  = db.relationship("WordParadigm", back_populates="paradigm",
                                       cascade="all, delete-orphan")
     inflected_forms = db.relationship("InflectedForm", back_populates="paradigm",
@@ -607,7 +660,8 @@ class InflectedForm(db.Model):
     )
 
     def __repr__(self):
-        return f"<InflectedForm {self.form_label}={self.form!r} word={self.word_id}>"
+        return (f"<InflectedForm {self.form_label}={self.form!r} "
+                f"word={self.word_id}>")
 
 
 # ===========================================================================
@@ -616,19 +670,17 @@ class InflectedForm(db.Model):
 
 class GrammarRule(db.Model):
     """
-    A single named grammatical rule scoped to a language, optionally a dialect.
+    A named grammatical rule scoped to a language, optionally a dialect.
 
-    rule_order controls translator sequence within each rule_type (ascending).
-    dialect_id = NULL means the rule applies to all dialects of the language.
+    rule_order  — translator applies ascending order within each rule_type
+    dialect_id  — NULL = applies to all dialects
+    is_active   — flip False to disable without deleting (translator testing)
 
     pattern / result format by rule_type:
-      morphology:   pattern = structural description, result = output template
-      syntax:       pattern = default constituent order, result = exceptions
-      phonology:    broad notes only — use PhonologyRule for IPA-precise rules
-      cv_structure: pattern = template ("CVC", "CVCC"), result = restrictions
-
-    is_active allows disabling a rule without deleting it — useful when
-    testing translator output with a rule temporarily switched off.
+      morphology:   structural description → output template
+      syntax:       default constituent order → exceptions
+      phonology:    broad notes only (use PhonologyRule for IPA-precise rules)
+      cv_structure: CV template ("CVC") → restriction notes
     """
     __tablename__ = "grammar_rules"
 
@@ -642,11 +694,10 @@ class GrammarRule(db.Model):
     rule_type  = db.Column(db.Enum(GrammarRuleType), nullable=False)
     rule_order = db.Column(db.Integer, nullable=False, default=100)
 
-    pattern    = db.Column(db.Text)   # structural input description
-    result     = db.Column(db.Text)   # output or transformation
-    example    = db.Column(db.Text)   # illustrative romanized example
+    pattern    = db.Column(db.Text)
+    result     = db.Column(db.Text)
+    example    = db.Column(db.Text)
     notes      = db.Column(db.Text)
-
     is_active  = db.Column(db.Boolean, nullable=False, default=True)
 
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -662,31 +713,24 @@ class GrammarRule(db.Model):
     )
 
     def __repr__(self):
-        return (f"<GrammarRule [{self.rule_type.value}] order={self.rule_order} "
-                f"{self.name!r}>")
+        return (f"<GrammarRule [{self.rule_type.value}] "
+                f"order={self.rule_order} {self.name!r}>")
 
 
 class PhonologyRule(db.Model):
     """
     An IPA-precise phonological rule, always scoped to a dialect.
 
-    Rules with the same rule_order are unordered relative to each other —
-    avoid ties where sequence matters (e.g. feeding/bleeding pairs).
+    input_ipa   — sound/class being changed, e.g. "k", "[+velar]", "V"
+    output_ipa  — result; empty string = deletion/elision
+    environment — standard phonological context notation, e.g.:
+                  "_ [+front vowel]"  (before a front vowel)
+                  "C _"               (after any consonant)
+                  "# _"               (word-initial)
+                  "_ #"               (word-final)
+                  NULL = no environment restriction
 
-    IPA fields:
-      input_ipa   — sound or class being changed, e.g. "k", "[+velar]", "V"
-      output_ipa  — result; empty string = deletion/elision
-      environment — standard phonological context notation:
-                    "_ [+front vowel]"   (before a front vowel)
-                    "C _"                (after any consonant)
-                    "# _"                (word-initial position)
-                    "_ #"                (word-final position)
-                    NULL = no environment restriction (applies everywhere)
-
-    formal_notation stores optional SPE / OT notation for export.
-
-    is_feeding / is_bleeding are documentation aids only — the translator
-    uses rule_order alone for sequencing.
+    is_feeding / is_bleeding — documentation aids; translator uses rule_order only
     """
     __tablename__ = "phonology_rules"
 
@@ -698,21 +742,16 @@ class PhonologyRule(db.Model):
     rule_type  = db.Column(db.Enum(PhonologyRuleType), nullable=False)
     rule_order = db.Column(db.Integer, nullable=False, default=100)
 
-    # IPA rule specification
-    input_ipa   = db.Column(db.String(120), nullable=False)
-    output_ipa  = db.Column(db.String(120), nullable=False, default="")
-    environment = db.Column(db.String(255))
-
-    # Optional formal notation (SPE / OT) for linguist export
+    input_ipa       = db.Column(db.String(120), nullable=False)
+    output_ipa      = db.Column(db.String(120), nullable=False, default="")
+    environment     = db.Column(db.String(255))
     formal_notation = db.Column(db.Text)
 
     scope       = db.Column(db.Enum(RuleScope), default=RuleScope.word_internal)
-
-    # Interaction metadata — documentation only
     is_feeding  = db.Column(db.Boolean, default=False)
     is_bleeding = db.Column(db.Boolean, default=False)
 
-    example    = db.Column(db.Text)   # e.g. "/keta/ → [tʃeta] before /e/"
+    example    = db.Column(db.Text)
     notes      = db.Column(db.Text)
     is_active  = db.Column(db.Boolean, nullable=False, default=True)
 
@@ -728,5 +767,220 @@ class PhonologyRule(db.Model):
 
     def __repr__(self):
         env = f" / {self.environment}" if self.environment else ""
-        return (f"<PhonologyRule [{self.rule_type.value}] order={self.rule_order} "
-                f"{self.input_ipa!r} → {self.output_ipa!r}{env}>")
+        return (f"<PhonologyRule [{self.rule_type.value}] "
+                f"order={self.rule_order} {self.input_ipa!r} → "
+                f"{self.output_ipa!r}{env}>")
+
+
+# ===========================================================================
+# Phase 4 — Idioms, Collocations & Translation Memory
+# ===========================================================================
+
+class Idiom(db.Model):
+    """
+    A multi-word expression whose meaning is not compositional.
+
+    These must be looked up BEFORE the translator attempts word-by-word
+    processing — the idiom match wins and the component words are not
+    translated individually.
+
+    Surface forms
+    -------------
+    phrase           — the canonical romanized surface form used for matching,
+                       e.g. "vel etek mora"
+    phrase_script    — the same phrase in script codes (soft FK into glyphs),
+                       space-separated, e.g. "V-03 K-07 M-02"
+
+    Both fields are indexed for fast substring search.
+
+    Dialect scoping
+    ---------------
+    dialect_id = NULL → the idiom is valid in all dialects of the language.
+    Set dialect_id to restrict to one dialect's usage.
+
+    Variability
+    -----------
+    is_fixed = True  → the phrase must appear verbatim (no inflection of parts)
+    is_fixed = False → individual components may inflect; the IdiomWord
+                       component_role column records which slots are flexible
+    """
+    __tablename__ = "idioms"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    language_id = db.Column(db.Integer, db.ForeignKey("languages.id",
+                            ondelete="CASCADE"), nullable=False)
+    dialect_id  = db.Column(db.Integer, db.ForeignKey("dialects.id",
+                            ondelete="SET NULL"), nullable=True)
+
+    phrase        = db.Column(db.String(512), nullable=False)
+                              # romanized, used for translator matching
+    phrase_script = db.Column(db.String(512))
+                              # space-separated script codes
+
+    idiom_type  = db.Column(db.Enum(IdiomType), nullable=False,
+                            default=IdiomType.idiom)
+    register    = db.Column(db.Enum(Register), nullable=False,
+                            default=Register.neutral)
+
+    meaning     = db.Column(db.Text, nullable=False)
+                              # English gloss of the whole expression
+    literal     = db.Column(db.Text)
+                              # word-by-word literal meaning for reference
+    example     = db.Column(db.Text)
+                              # usage example in the conlang
+    example_translation = db.Column(db.Text)
+                              # English translation of the example
+
+    is_fixed    = db.Column(db.Boolean, nullable=False, default=True)
+                              # True = verbatim match only
+    notes       = db.Column(db.Text)
+
+    created_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                            onupdate=lambda: datetime.now(timezone.utc))
+
+    language    = db.relationship("Language", back_populates="idioms")
+    dialect     = db.relationship("Dialect",  back_populates="idioms")
+    idiom_words = db.relationship("IdiomWord", back_populates="idiom",
+                                  cascade="all, delete-orphan",
+                                  order_by="IdiomWord.position")
+
+    __table_args__ = (
+        db.Index("ix_idioms_phrase", "language_id", "phrase"),
+    )
+
+    def __repr__(self):
+        return (f"<Idiom {self.phrase!r} "
+                f"[{self.idiom_type.value}] lang={self.language_id}>")
+
+
+class IdiomWord(db.Model):
+    """
+    Junction: which words make up an idiom, and in what order.
+
+    position       — 0-based index of this word in the phrase
+    component_role — free-text slot label for inflectable components
+                     e.g. "subject", "verb", "object"
+                     NULL for fixed/non-inflecting positions
+    inflected_form_id — optional FK to a specific InflectedForm if this slot
+                        always uses a particular inflected form (e.g. the verb
+                        is always in the imperative)
+    word_id        — NULL is allowed: the slot is a function word or particle
+                     that exists in the phrase but has no lexicon entry yet
+    """
+    __tablename__ = "idiom_words"
+
+    id        = db.Column(db.Integer, primary_key=True)
+    idiom_id  = db.Column(db.Integer, db.ForeignKey("idioms.id",
+                          ondelete="CASCADE"), nullable=False)
+    word_id   = db.Column(db.Integer, db.ForeignKey("words.id",
+                          ondelete="SET NULL"), nullable=True)
+
+    position          = db.Column(db.Integer, nullable=False)
+    component_role    = db.Column(db.String(80))
+    inflected_form_id = db.Column(db.Integer,
+                                  db.ForeignKey("inflected_forms.id",
+                                                ondelete="SET NULL"),
+                                  nullable=True)
+    surface_form      = db.Column(db.String(255))
+                                  # literal token as it appears in the phrase,
+                                  # useful when word_id is NULL or inflected
+
+    idiom          = db.relationship("Idiom", back_populates="idiom_words")
+    word           = db.relationship("Word",  back_populates="idiom_words")
+    inflected_form = db.relationship("InflectedForm")
+
+    __table_args__ = (
+        db.UniqueConstraint("idiom_id", "position", name="uq_idiom_position"),
+    )
+
+    def __repr__(self):
+        return (f"<IdiomWord idiom={self.idiom_id} "
+                f"pos={self.position} word={self.word_id}>")
+
+
+class TranslationMemory(db.Model):
+    """
+    Stored sentence pairs used to validate and improve the rule-based
+    translator over time.
+
+    Scoping
+    -------
+    language_id  — the conlang this entry belongs to (always required)
+    dialect_id   — the specific dialect; NULL = applies to all dialects
+
+    Source / target convention
+    --------------------------
+    source_text       — text in the SOURCE language (typically English or
+                        whatever natural language the author is working from)
+    source_language_id — FK to a Language row if the source is another
+                         conlang in this app; NULL for natural languages
+                         (store the natural language name in source_lang_name)
+    source_lang_name  — free-text name of the source language when it is a
+                        natural language not tracked in this app, e.g. "English"
+    target_text       — text in the conlang (romanized)
+    target_script     — target_text in script codes (optional)
+
+    Validation workflow
+    -------------------
+    status: draft → approved (author confirms) or rejected (known wrong).
+    Rejected entries are kept for audit — they document failure cases useful
+    for debugging the translator.
+
+    confidence        — float 0.0–1.0, auto-set by the translator engine when
+                        source = 'translator'.  NULL for manual entries.
+    """
+    __tablename__ = "translation_memory"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    language_id = db.Column(db.Integer, db.ForeignKey("languages.id",
+                            ondelete="CASCADE"), nullable=False)
+    dialect_id  = db.Column(db.Integer, db.ForeignKey("dialects.id",
+                            ondelete="CASCADE"), nullable=True)
+
+    # Source side
+    source_text        = db.Column(db.Text, nullable=False)
+    source_language_id = db.Column(db.Integer,
+                                   db.ForeignKey("languages.id",
+                                                 ondelete="SET NULL"),
+                                   nullable=True)
+                                   # FK if source is another tracked conlang
+    source_lang_name   = db.Column(db.String(120))
+                                   # free-text if source is a natural language
+
+    # Target side
+    target_text   = db.Column(db.Text, nullable=False)
+                               # romanized conlang text
+    target_script = db.Column(db.Text)
+                               # same text in script codes (optional)
+
+    # Provenance & quality
+    source     = db.Column(db.Enum(TranslationSource), nullable=False,
+                           default=TranslationSource.manual)
+    status     = db.Column(db.Enum(TranslationStatus), nullable=False,
+                           default=TranslationStatus.draft)
+    confidence = db.Column(db.Float)
+                           # 0.0–1.0; set by translator engine, NULL for manual
+
+    notes      = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    language        = db.relationship("Language",
+                                      foreign_keys=[language_id],
+                                      back_populates="translation_memory")
+    source_language = db.relationship("Language",
+                                      foreign_keys=[source_language_id])
+    dialect         = db.relationship("Dialect",
+                                      back_populates="translation_memory")
+
+    __table_args__ = (
+        db.Index("ix_tm_language_status", "language_id", "status"),
+        db.Index("ix_tm_dialect_status",  "dialect_id",  "status"),
+    )
+
+    def __repr__(self):
+        preview = (self.source_text or "")[:30]
+        return (f"<TranslationMemory [{self.status.value}] "
+                f"lang={self.language_id} {preview!r}>")
