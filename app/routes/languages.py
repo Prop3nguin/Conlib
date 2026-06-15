@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, redirect, url_for
+from app import db
+from app.models import Language, Dialect, Script, Glyph
 
 languages_bp = Blueprint("languages", __name__)
 
@@ -15,7 +17,11 @@ def languages_home():
     - filters: dropdowns or checkboxes to filter the language list by various criteria (e.g. language family, number of speakers, etc)
     - stats: summary of how many languages, dialects, scripts, and glyphs currently shown with filters and search applied.
     """
-    return render_template('languages.html')
+    context = {
+        "languages": Language.query.all(),
+    }
+
+    return render_template('languages.html', **context)
 
 @languages_bp.route('/<int:language_id>', methods=['GET', 'POST'])
 def language_detail(language_id):
@@ -36,3 +42,27 @@ def scripts():
 def glyphs(script_id):
     # Implementation for handling glyphs view
     pass
+
+@languages_bp.route('/DBStructure', methods=['GET', 'POST'])
+def db_structure():
+    
+    context = {
+        "languages": Language.query.all(),
+        "dialects": Dialect.query.all(),
+        "scripts": Script.query.all(),
+        "glyphs": Glyph.query.all()
+    }
+
+    return render_template('db_structure.html', **context)
+
+@languages_bp.route('/add', methods=['GET', 'POST'])
+def add_language():
+    if request.method == 'POST':
+        
+        new_language = Language()
+        db.session.add(new_language)
+        db.session.commit()
+
+        return redirect(url_for('languages.languages_home'))
+
+    return render_template('add_language.html')

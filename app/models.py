@@ -263,6 +263,7 @@ class Language(db.Model):
     idioms             = db.relationship("Idiom", back_populates="language",
                                          cascade="all, delete-orphan")
     translation_memory = db.relationship("TranslationMemory",
+                                         foreign_keys="[TranslationMemory.language_id]",
                                          back_populates="language",
                                          cascade="all, delete-orphan")
 

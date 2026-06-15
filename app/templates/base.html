@@ -2,13 +2,22 @@
 <html>
     <head>
         <title>{% block title %}Conlang Library{% endblock %}</title>
+        <link href="../static/Styles/base.css" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Amita:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+        {% block style %}
+        {% endblock %}
     </head>
     <body>
 
         <nav>
-            <a href="/">Languages</a>
-            <a href="/translator">Translator</a>
-            <a href="/export">Export</a>
+            <ul>
+                <li><a href="/">Languages</a></li>
+                <li><a href="/translator">Translator</a></li>
+                <li><a href="/export">Export</a></li>
+                <li><a href="/DBStructure">DB Structure</a></li>
+            </ul>
         </nav>
 
         {% block content %}

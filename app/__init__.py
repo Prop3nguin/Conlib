@@ -1,22 +1,29 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from config import Config
+"""
+app/__init__.py — application factory
 
-db = SQLAlchemy()
+db and migrate are defined ONCE here as module-level objects so they can be
+imported by models.py and routes without circular imports. models.py should
+import db from here (or, if db is defined in models.py instead, this file
+should import it from there — pick ONE source of truth, never define
+SQLAlchemy() in both places).
+"""
+
+from flask import Flask
+from flask_migrate import Migrate
+
+from app.models import db   # db = SQLAlchemy() lives in models.py — single source of truth
+
 migrate = Migrate()
 
 
 def create_app():
     app = Flask(__name__)
+    app.config.from_object("config.Config")
 
-    app.config.from_object(Config)
-
-    print(app.config.get("SQLALCHEMY_DATABASE_URI"))
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Import blueprints here
+    # --- Blueprints ----------------------------------------------------------
     from app.routes.languages import languages_bp
     from app.routes.lexicon import lexicon_bp
     from app.routes.translator import translator_bp

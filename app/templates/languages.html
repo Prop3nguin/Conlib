@@ -1,9 +1,19 @@
 {% extends "base.html" %}
 
 {% block title %}
-Languages
+ConLib - Languages
 {% endblock %}
 
 {% block content %}
 <h1>Languages</h1>
+    <ul>
+        {% for language in languages %}
+        <li class="InstanceTitle">{{ language.name }} ({{ language.family }})</li>
+        <li>Dialects: {{ language.dialects|length }}</li>
+        <li>Scripts: {{ language.scripts|length }}</li>
+        <li>Glyphs: {{ language.glyphs|length }}</li>
+        <li>Articles: {{ language.articles|length }}</li>
+        <li>Translators: {{ language.translators|length }}</li>
+        {% endfor %}
+    </ul>
 {% endblock %}

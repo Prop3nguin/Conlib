@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}
+Conlib - Add Language
+{% endblock %}
+
+{% block content %}
+    <h1>Add Language</h1>
+    <form method="POST" action="{{ url_for('languages.add_language') }}">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br>
+        <label for="family">Family:</label>
+        <input type="text" id="family" name="family" required>
+        <br>
+        <label for="region">Region:</label>
+        <input type="text" id="region" name="region" required>
+        <br>
+        <label for="speakers">Number of Speakers:</label>
+        <input type="number" id="speakers" name="speakers" required>
+        <br>
+        <button type="submit">Add Language</button>
+    </form>
+{% endblock %}
