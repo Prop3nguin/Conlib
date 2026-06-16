@@ -1,0 +1,52 @@
+{% extends "base.html" %}  
+
+{% block title %}
+{{ language.name }} Details
+{% endblock %}
+
+{% block style %}
+    <style>
+        .InstanceTitle {
+            font-family: 'Amita';
+            font-weight: bold;
+            text-align: center;
+            padding: 40px;
+            margin: 40px;
+            border-radius: 10px;
+            background-color: rgb(30, 30, 30);
+        }
+        .Columns {
+            width:100%;
+            display:flex;
+            list-style: none;
+            background-color: rgb(30, 30, 30);
+            border-radius: 15px;
+        }
+        .Columns li {
+            position: relative;
+            text-align: center;
+            width: 100%;
+            min-height: 500px;  
+            padding: 3%;
+            border-radius: 15px;
+            background-color: #333;
+            margin: 4px 2px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<h1 class="InstanceTitle">{{ language.name }}</h1>
+<ul class="Columns">
+    <li>
+        <p>Hello</p>
+    </li>
+    <li>
+        <p>Hello</p>
+    </li>
+    <li>
+        <p>Hello my name is somthing very long like mr man guy thing dude professionalP3nguin#1 Spencer chritian Haley</p>
+    </li>
+</ul>
+
+{% endblock %}

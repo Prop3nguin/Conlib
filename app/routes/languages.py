@@ -25,8 +25,8 @@ def languages_home():
 
 @languages_bp.route('/<int:language_id>', methods=['GET', 'POST'])
 def language_detail(language_id):
-    # Implementation for handling language detail view
-    pass
+    language = Language.query.get_or_404(language_id)
+    return render_template('language_detail.html', language=language)
 
 @languages_bp.route('/dialects', methods=['GET', 'POST'])
 def dialects():
@@ -58,8 +58,17 @@ def db_structure():
 @languages_bp.route('/add', methods=['GET', 'POST'])
 def add_language():
     if request.method == 'POST':
+
+        print(request.form)
         
-        new_language = Language()
+        name = request.form['name']
+        status = request.form['status']
+
+        new_language = Language(
+            name=name, 
+            status=status
+            )
+
         db.session.add(new_language)
         db.session.commit()
 

@@ -1,22 +1,13 @@
 """
-models.py — Full schema: Phases 1–4
+models.py — Full schema: Phases 1–6
 Phase 1: languages, language_relationships, dialects, scripts, glyphs
 Phase 2: words, morphemes, senses, sense_fields, semantic_fields,
          pronunciations, inflection_paradigms, word_paradigms, inflected_forms
 Phase 3: grammar_rules, phonology_rules
 Phase 4: idioms, idiom_words, translation_memory
+Phase 5: translator engine — no DB changes (see app/translator/)
+Phase 6: etymology_articles, etymology_events, sample_texts
 
----- to-do ----
-! - phase 5 will be the translator engine, which doesn't require DB changes but will
-    need to query/apply all these rules and data structures in the right order.
-
-! - phase 6 will be etymology articles, timelines, and sample texts wich
-    may need some new tables but can be added later.
----------------
-
-Run after editing:
-    flask db migrate -m "phase 4 idioms and translation memory"
-    flask db upgrade
 """
 
 import enum
@@ -210,6 +201,46 @@ class TranslationStatus(enum.Enum):
     rejected = "rejected"
 
 
+# --- Phase 6 ----------------------------------------------------------------
+
+class ArticleType(enum.Enum):
+    """
+    What kind of etymology article is this?
+
+    history      — origin and history of the language itself
+    dialect      — evolution and divergence of a specific dialect
+    vocabulary   — how a semantic domain or word class developed
+    loanwords    — borrowing from another language, with era and direction
+    cultural     — how beliefs, events, or social structures shaped the lexicon
+    """
+    history   = "history"
+    dialect   = "dialect"
+    vocabulary = "vocabulary"
+    loanwords = "loanwords"
+    cultural  = "cultural"
+    other     = "other"
+
+
+class EventType(enum.Enum):
+    """
+    What kind of historical event does this timeline entry record?
+
+    sound_change   — a phonological shift (links to a PhonologyRule)
+    grammar_change — a grammatical restructuring (links to a GrammarRule)
+    dialect_split  — a dialect diverges from its parent
+    contact_event  — contact with another language causes borrowing/shift
+    cultural_event — a social or cultural shift that affected the language
+    lexical_event  — a word enters, leaves, or changes meaning
+    """
+    sound_change   = "sound_change"
+    grammar_change = "grammar_change"
+    dialect_split  = "dialect_split"
+    contact_event  = "contact_event"
+    cultural_event = "cultural_event"
+    lexical_event  = "lexical_event"
+    other          = "other"
+
+
 # ===========================================================================
 # Phase 1 — Foundation
 # ===========================================================================
@@ -264,6 +295,13 @@ class Language(db.Model):
                                          cascade="all, delete-orphan")
     translation_memory = db.relationship("TranslationMemory",
                                          foreign_keys="[TranslationMemory.language_id]",
+                                         back_populates="language",
+                                         cascade="all, delete-orphan")
+    # Phase 6
+    etymology_articles = db.relationship("EtymologyArticle",
+                                         back_populates="language",
+                                         cascade="all, delete-orphan")
+    sample_texts       = db.relationship("SampleText",
                                          back_populates="language",
                                          cascade="all, delete-orphan")
 
@@ -350,6 +388,11 @@ class Dialect(db.Model):
     translation_memory = db.relationship("TranslationMemory",
                                          back_populates="dialect",
                                          cascade="all, delete-orphan")
+    # Phase 6
+    etymology_events = db.relationship("EtymologyEvent",
+                                       back_populates="dialect")
+    sample_texts     = db.relationship("SampleText",
+                                       back_populates="dialect")
 
     def __repr__(self):
         return f"<Dialect {self.name!r} (lang={self.language_id})>"
@@ -985,3 +1028,191 @@ class TranslationMemory(db.Model):
         preview = (self.source_text or "")[:30]
         return (f"<TranslationMemory [{self.status.value}] "
                 f"lang={self.language_id} {preview!r}>")
+
+# ===========================================================================
+# Phase 6 — Etymology Articles, Timeline Events & Sample Texts
+# ===========================================================================
+
+class EtymologyArticle(db.Model):
+    """
+    A long-form article documenting the origin and evolution of the language
+    or one of its aspects.
+
+    body_md stores the article body as Markdown. export.py renders this via
+    the etymology_article.html Jinja2 template and saves the result to
+    exports/ as a self-contained .html file.
+
+    References to specific words, dialects, or other DB objects should be
+    embedded in the Markdown as inline IDs and resolved at render time by
+    the template, e.g. {{word:42}} or {{dialect:3}}.
+
+    dialect_id is nullable — set it when the article is specifically about
+    one dialect rather than the language as a whole.
+    """
+    __tablename__ = "etymology_articles"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    language_id = db.Column(db.Integer, db.ForeignKey("languages.id",
+                            ondelete="CASCADE"), nullable=False)
+    dialect_id  = db.Column(db.Integer, db.ForeignKey("dialects.id",
+                            ondelete="SET NULL"), nullable=True)
+
+    title        = db.Column(db.String(255), nullable=False)
+    article_type = db.Column(db.Enum(ArticleType), nullable=False,
+                             default=ArticleType.history)
+    summary      = db.Column(db.Text)   # short abstract shown in article lists
+    body_md      = db.Column(db.Text, nullable=False)
+                             # full article body in Markdown
+
+    # Export tracking — set when export.py renders the article to exports/
+    last_exported_at  = db.Column(db.DateTime)
+    exported_filename = db.Column(db.String(255))
+                             # e.g. "vethian_origins_2024.html"
+
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    language = db.relationship("Language", back_populates="etymology_articles")
+    dialect  = db.relationship("Dialect",  foreign_keys=[dialect_id])
+    events   = db.relationship("EtymologyEvent", back_populates="article",
+                               cascade="all, delete-orphan",
+                               order_by="EtymologyEvent.era_sort_key")
+
+    def __repr__(self):
+        return f"<EtymologyArticle {self.title!r} (lang={self.language_id})>"
+
+
+class EtymologyEvent(db.Model):
+    """
+    A single entry in the chronological timeline of a language or dialect.
+
+    Timeline entries anchor historical translation rules — the translator
+    can use era_sort_key to select the appropriate phonology and grammar
+    rules for a given historical period.
+
+    Linking to rules
+    ----------------
+    phonology_rule_id and grammar_rule_id are optional FKs. Set them when
+    this event directly corresponds to a rule already in the DB, so the
+    UI can cross-link between the timeline and the rule editor.
+
+    era_label    — human-readable period name, e.g. "Early Classical Period"
+    era_sort_key — integer for chronological ordering (can be a year, decade,
+                   or any consistent ordinal — negative values for pre-history)
+
+    dialect_id   — NULL = event applies to the whole language; set to scope
+                   it to a dialect divergence or dialect-specific change.
+    """
+    __tablename__ = "etymology_events"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    article_id = db.Column(db.Integer, db.ForeignKey("etymology_articles.id",
+                           ondelete="CASCADE"), nullable=False)
+    dialect_id = db.Column(db.Integer, db.ForeignKey("dialects.id",
+                           ondelete="SET NULL"), nullable=True)
+
+    event_type   = db.Column(db.Enum(EventType), nullable=False)
+    era_label    = db.Column(db.String(120), nullable=False)
+                             # e.g. "Early Classical Period", "~300 BP"
+    era_sort_key = db.Column(db.Integer, nullable=False, default=0)
+                             # chronological sort order; negative = pre-history
+
+    title       = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    example     = db.Column(db.Text)   # illustrative form change or example
+
+    # Optional cross-links to rules already in the DB
+    phonology_rule_id = db.Column(db.Integer,
+                                  db.ForeignKey("phonology_rules.id",
+                                                ondelete="SET NULL"),
+                                  nullable=True)
+    grammar_rule_id   = db.Column(db.Integer,
+                                  db.ForeignKey("grammar_rules.id",
+                                                ondelete="SET NULL"),
+                                  nullable=True)
+
+    # Optional cross-link to a word whose etymology this event explains
+    word_id = db.Column(db.Integer, db.ForeignKey("words.id",
+                        ondelete="SET NULL"), nullable=True)
+
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    article        = db.relationship("EtymologyArticle", back_populates="events")
+    dialect        = db.relationship("Dialect", back_populates="etymology_events")
+    phonology_rule = db.relationship("PhonologyRule")
+    grammar_rule   = db.relationship("GrammarRule")
+    word           = db.relationship("Word")
+
+    __table_args__ = (
+        db.Index("ix_etymology_events_article_sort",
+                 "article_id", "era_sort_key"),
+    )
+
+    def __repr__(self):
+        return (f"<EtymologyEvent [{self.event_type.value}] "
+                f"{self.era_label!r} {self.title!r}>")
+
+
+class SampleText(db.Model):
+    """
+    A canonical passage used to demonstrate the language, test font rendering,
+    and anchor the translator as a Rosetta Stone.
+
+    All four representations are stored in parallel:
+      source_text   — the original passage (in English or another source language)
+      script_text   — the conlang rendered in script codes (→ custom font)
+      romanization  — romanized conlang text
+      ipa           — IPA transcription (dialect-aware)
+      translation   — English gloss / translation
+
+    dialect_id is required — sample texts are always dialect-specific because
+    phonology and script may differ across dialects.
+
+    Translator regression
+    ---------------------
+    SampleText rows double as regression test cases for the translator engine.
+    After a rule change, run the translator on source_text for each sample
+    and compare to romanization — drift indicates a broken rule.
+    is_regression_test flags which samples are actively used for this purpose.
+    """
+    __tablename__ = "sample_texts"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    language_id = db.Column(db.Integer, db.ForeignKey("languages.id",
+                            ondelete="CASCADE"), nullable=False)
+    dialect_id  = db.Column(db.Integer, db.ForeignKey("dialects.id",
+                            ondelete="CASCADE"), nullable=False)
+
+    title       = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+
+    # The four parallel representations
+    source_text  = db.Column(db.Text, nullable=False)
+                             # original text in the source/natural language
+    script_text  = db.Column(db.Text)
+                             # conlang in space-separated script codes
+    romanization = db.Column(db.Text, nullable=False)
+                             # romanized conlang
+    ipa          = db.Column(db.Text)
+                             # IPA transcription
+    translation  = db.Column(db.Text, nullable=False)
+                             # English gloss
+
+    # Regression testing
+    is_regression_test = db.Column(db.Boolean, nullable=False, default=False)
+                             # True = used to validate translator output
+
+    notes      = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
+
+    language = db.relationship("Language", back_populates="sample_texts")
+    dialect  = db.relationship("Dialect",  back_populates="sample_texts")
+
+    def __repr__(self):
+        return (f"<SampleText {self.title!r} "
+                f"dialect={self.dialect_id} regression={self.is_regression_test}>")

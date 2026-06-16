@@ -4,20 +4,54 @@
 Conlib - Add Language
 {% endblock %}
 
+{% block style %}
+    <style>
+        h1 {
+            font-family: 'Amita';
+            font-weight: bold;
+            text-align: center;
+            padding: 40px;
+            margin: 40px;
+            border-radius: 10px;
+            background-color: rgb(30, 30, 30);
+        }
+        option, input {
+            color: rgb(30, 30, 30);
+        }
+        form {
+            margin: 20px;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+        }
+        input, select {
+            margin-bottom: 10px;
+        }
+        textarea {
+            position: relative;
+        }
+</style>
+{% endblock %}
+
 {% block content %}
     <h1>Add Language</h1>
     <form method="POST" action="{{ url_for('languages.add_language') }}">
+        <h3>Required Language Information</h3>
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required>
         <br>
-        <label for="family">Family:</label>
-        <input type="text" id="family" name="family" required>
+        <label for="status">Status:</label>
+        <select name="status" required>
+            <option value="living">Living</option>
+            <option value="extinct">Extinct</option>
+            <option value="liturgical">Liturgical</option>
+            <option value="constructed">Constructed</option>
+        </select>
         <br>
-        <label for="region">Region:</label>
-        <input type="text" id="region" name="region" required>
+        <label for="desc">Description:</label>
         <br>
-        <label for="speakers">Number of Speakers:</label>
-        <input type="number" id="speakers" name="speakers" required>
+        <textarea id="desc" name="desc" rows="12" cols="60" placeholder="Write details about what the Language is supposed to acomplish, weather it be for fun, for a narrative, or for more efficient use by yourself (like a shorthand)"></textarea>
         <br>
         <button type="submit">Add Language</button>
     </form>

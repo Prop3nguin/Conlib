@@ -4,16 +4,22 @@
 ConLib - Languages
 {% endblock %}
 
+{% block style %}
+    <style>
+        ul {
+            list-style-type: none;
+            padding: 10;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 <h1>Languages</h1>
     <ul>
         {% for language in languages %}
-        <li class="InstanceTitle">{{ language.name }} ({{ language.family }})</li>
-        <li>Dialects: {{ language.dialects|length }}</li>
-        <li>Scripts: {{ language.scripts|length }}</li>
-        <li>Glyphs: {{ language.glyphs|length }}</li>
-        <li>Articles: {{ language.articles|length }}</li>
-        <li>Translators: {{ language.translators|length }}</li>
+        <li class="InstanceTitle"><a href="{{ url_for('languages.language_detail', language_id=language.id) }}">{{ language.name }}</a></li>
+        <li>|-- Dialects: {{ language.dialects|length }}</li>
+        <li>|-- Articles: {{ language.articles|length }}</li>
         {% endfor %}
     </ul>
 {% endblock %}
