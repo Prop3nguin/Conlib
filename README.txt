@@ -1,5 +1,3 @@
-# Test
-
 ```mermaid
 erDiagram
     LANGUAGE ||--o{ DIALECT : has
