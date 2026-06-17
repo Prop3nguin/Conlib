@@ -6,12 +6,20 @@
 
 {% block style %}
     <style>
-        .InstanceTitle {
+        .PageTitle {
             font-family: 'Amita';
             font-weight: bold;
             text-align: center;
             padding: 40px;
             margin: 40px;
+            border-radius: 10px;
+            background-color: rgb(30, 30, 30);
+        }
+        .InstanceTitle {
+            font-family: 'Amita';
+            font-weight: bold;
+            text-align: center;
+            padding: 40px;
             border-radius: 10px;
             background-color: rgb(30, 30, 30);
         }
@@ -28,24 +36,41 @@
             width: 100%;
             min-height: 500px;  
             padding: 3%;
+            padding-top: 10px;
             border-radius: 15px;
             background-color: #333;
             margin: 4px 2px;
+        }
+        .Description {
+            justify-self: center;
+            max-width: 85%;
+            min-height: 250px;
+            margin: 20px;
+            padding: 30px;
+            background-color: rgb(30, 30, 30);
+            border-radius: 10px;
+            line-height: 50px;
+            text-indent: 50px;
         }
     </style>
 {% endblock %}
 
 {% block content %}
-<h1 class="InstanceTitle">{{ language.name }}</h1>
+<h1 class="PageTitle">{{ language.name }}</h1>
+<div class="Description">{{ language.description }}</div>
+<ul class="Links">
+    <li><a >Lexicon</a></li>
+    <li><a >Translator</a></li>
+</ul>
 <ul class="Columns">
     <li>
-        <p>Hello</p>
+        <h3 class="InstanceTitle">Related Articles :</h3>
     </li>
     <li>
-        <p>Hello</p>
+        <h3 class="InstanceTitle">Sample Texts :</h3>
     </li>
     <li>
-        <p>Hello my name is somthing very long like mr man guy thing dude professionalP3nguin#1 Spencer chritian Haley</p>
+        <h3 class="InstanceTitle">Samples Translated :</h3>
     </li>
 </ul>
 

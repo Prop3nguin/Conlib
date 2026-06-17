@@ -15,44 +15,97 @@ Conlib - Add Language
             border-radius: 10px;
             background-color: rgb(30, 30, 30);
         }
-        option, input {
-            color: rgb(30, 30, 30);
+        h3{
+            justify-self: center;
+            padding: 40px;
+            background-color: rgb(30, 30, 30);
+            transform: translateY(10px);
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
         }
         form {
-            margin: 20px;
+            background-color: rgb(30, 30, 30);
+            border-radius: 15px;
+            margin: 10px;
+        }
+        form ul {
+            width: 100%;
+            display: flex;
+            list-style: none;
+            justify-content: center;
+        }
+        form ul li {
+            border-radius: 5px;
+            background-color: #333;
+            padding: 20px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            margin-left: 10px;
+            margin-right: 10px;
         }
         label {
+            font-family: 'Uncial Antiqua';
             display: inline-block;
             width: 100px;
+            white-space: nowrap;
+            margin-right:100px;
         }
-        input, select {
+        input, select, option {
+            padding: 5px;
+            border-radius: 5px;
+            font-family: 'Amita';
             margin-bottom: 10px;
+            background-color: rgb(30, 30, 30);
         }
-        textarea {
-            position: relative;
+        .submit {
+            width: 90%;
+        }
+        .button {
+            margin: 0;
+            padding: 0;
+        }
+        .disclaimer {
+            color: #999;
+            margin-top: 20px;
+            text-indent: 20px;
         }
 </style>
 {% endblock %}
 
 {% block content %}
     <h1>Add Language</h1>
+    <h3>-- Required Language Information --</h3>
     <form method="POST" action="{{ url_for('languages.add_language') }}">
-        <h3>Required Language Information</h3>
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br>
-        <label for="status">Status:</label>
-        <select name="status" required>
-            <option value="living">Living</option>
-            <option value="extinct">Extinct</option>
-            <option value="liturgical">Liturgical</option>
-            <option value="constructed">Constructed</option>
-        </select>
-        <br>
-        <label for="desc">Description:</label>
-        <br>
-        <textarea id="desc" name="desc" rows="12" cols="60" placeholder="Write details about what the Language is supposed to acomplish, weather it be for fun, for a narrative, or for more efficient use by yourself (like a shorthand)"></textarea>
-        <br>
-        <button type="submit">Add Language</button>
+        <ul>
+            <li><label for="name">Name:</label>
+            <input type="text" id="name" name="name" placeholder="English, Español etc." required>
+            <br>
+            <label for="status">Status:</label>
+            <select name="status" required>
+                <option value="living">Living</option>
+                <option value="extinct">Extinct</option>
+                <option value="liturgical">Liturgical</option>
+                <option value="constructed">Constructed</option>
+            </select>
+            <br>
+            <p class="disclaimer">Not Required --</p>
+            <br>
+            <label for="WordOrder">Word Order:</label>
+            <select name="WordOrder">
+                <option value="SOV">Subject-Object-Verb</option>
+                <option value="SVO">Subject-Verb-Object</option>
+                <option value="VSO">Verb-Subject-Object</option>
+                <option value="VOS">Verb-Object-Subject</option>
+                <option value="OVS">Object-Verb-Subject</option>
+                <option value="OSV">Object-Subject-Verb</option>
+                <option value="free">Free</option>
+            </select>
+            <br></li>
+            <li><label for="description">Description:</label>
+            <br>
+            <textarea id="description" name="description" rows="12" cols="60" placeholder="Write details about what the Language is supposed to acomplish, weather it be for fun, for a narrative, or for more efficient use by yourself (like a shorthand)"></textarea>
+            <br></li>
+        </ul>
+        <ul class="Button"><button type="submit" class="submit">Add Language</button></ul>
     </form>
 {% endblock %}

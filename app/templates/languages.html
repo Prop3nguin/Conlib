@@ -18,7 +18,11 @@ ConLib - Languages
     <ul>
         {% for language in languages %}
         <li class="InstanceTitle"><a href="{{ url_for('languages.language_detail', language_id=language.id) }}">{{ language.name }}</a></li>
-        <li>|-- Dialects: {{ language.dialects|length }}</li>
+        <li>|-- Dialects: 
+            {% for dialect in language.dialects %}
+            <li><a href="{{ url_for('languages.dialects', language_id=language.id, dialect_id=dialect.id) }}">|   {{ dialect.name }}</a></li>
+            {% endfor %}
+        </li>
         <li>|-- Articles: {{ language.articles|length }}</li>
         {% endfor %}
     </ul>

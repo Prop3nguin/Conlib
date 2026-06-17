@@ -8,6 +8,10 @@ Phase 4: idioms, idiom_words, translation_memory
 Phase 5: translator engine — no DB changes (see app/translator/)
 Phase 6: etymology_articles, etymology_events, sample_texts
 
+after editing run:
+    flask db migrate -m "Description of your model changes"
+    flask db upgrade
+
 """
 
 import enum
@@ -264,46 +268,94 @@ class Language(db.Model):
                            onupdate=lambda: datetime.now(timezone.utc))
 
     # Phase 1
-    dialects = db.relationship("Dialect", back_populates="language",
-                               cascade="all, delete-orphan")
+    default_dialect_id = db.Column(
+        db.Integer,
+        db.ForeignKey("dialects.id"),
+        nullable=True
+    )
+
+    default_dialect = db.relationship(
+        "Dialect",
+        foreign_keys=[default_dialect_id]
+    )
+
+    dialects = db.relationship(
+        "Dialect", 
+        foreign_keys="Dialect.language_id",
+        back_populates="language",
+        cascade="all, delete-orphan"
+        )
+    
     relationships_as_source = db.relationship(
         "LanguageRelationship",
         foreign_keys="LanguageRelationship.source_language_id",
         back_populates="source_language",
         cascade="all, delete-orphan",
     )
+
     relationships_as_target = db.relationship(
         "LanguageRelationship",
         foreign_keys="LanguageRelationship.target_language_id",
         back_populates="target_language",
         cascade="all, delete-orphan",
     )
+
     # Phase 2
-    words                = db.relationship("Word", back_populates="language",
-                                           cascade="all, delete-orphan")
-    morphemes            = db.relationship("Morpheme", back_populates="language",
-                                           cascade="all, delete-orphan")
-    inflection_paradigms = db.relationship("InflectionParadigm",
-                                           back_populates="language",
-                                           cascade="all, delete-orphan")
+    words                = db.relationship(
+        "Word", 
+        back_populates="language",
+        cascade="all, delete-orphan"
+        )
+    
+    morphemes            = db.relationship(
+        "Morpheme", 
+        back_populates="language",
+        cascade="all, delete-orphan"
+        )
+    
+    inflection_paradigms = db.relationship(
+        "InflectionParadigm",
+        back_populates="language",
+        cascade="all, delete-orphan"
+        )
+    
     # Phase 3
-    grammar_rules = db.relationship("GrammarRule", back_populates="language",
-                                    cascade="all, delete-orphan",
-                                    order_by="GrammarRule.rule_order")
+
+    grammar_rules = db.relationship(
+        "GrammarRule", 
+        back_populates="language",
+        cascade="all, delete-orphan",
+        order_by="GrammarRule.rule_order"
+        )
+    
     # Phase 4
-    idioms             = db.relationship("Idiom", back_populates="language",
-                                         cascade="all, delete-orphan")
-    translation_memory = db.relationship("TranslationMemory",
-                                         foreign_keys="[TranslationMemory.language_id]",
-                                         back_populates="language",
-                                         cascade="all, delete-orphan")
+
+    idioms             = db.relationship(
+        "Idiom", 
+        back_populates="language",
+        cascade="all, delete-orphan"
+        )
+    
+    translation_memory = db.relationship(
+        "TranslationMemory",
+        foreign_keys="[TranslationMemory.language_id]",
+        back_populates="language",
+        cascade="all, delete-orphan"
+        )
+    
     # Phase 6
-    etymology_articles = db.relationship("EtymologyArticle",
-                                         back_populates="language",
-                                         cascade="all, delete-orphan")
-    sample_texts       = db.relationship("SampleText",
-                                         back_populates="language",
-                                         cascade="all, delete-orphan")
+
+    etymology_articles = db.relationship(
+        "EtymologyArticle",
+        back_populates="language", 
+        cascade="all, delete-orphan"
+        )
+    
+    sample_texts       = db.relationship(
+        "SampleText",
+        back_populates="language",
+        cascade="all, delete-orphan"
+        )
 
     def __repr__(self):
         return f"<Language {self.name!r} ({self.status.value})>"
@@ -331,14 +383,25 @@ class LanguageRelationship(db.Model):
     notes      = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    source_language = db.relationship("Language", foreign_keys=[source_language_id],
-                                      back_populates="relationships_as_source")
-    target_language = db.relationship("Language", foreign_keys=[target_language_id],
-                                      back_populates="relationships_as_target")
+    source_language = db.relationship(
+        "Language", 
+        foreign_keys=[source_language_id],
+        back_populates="relationships_as_source"
+        )
+    
+    target_language = db.relationship(
+        "Language", 
+        foreign_keys=[target_language_id],
+        back_populates="relationships_as_target"
+        )
 
     __table_args__ = (
-        db.UniqueConstraint("source_language_id", "target_language_id",
-                            "relationship_type", name="uq_lang_rel"),
+        db.UniqueConstraint(
+            "source_language_id", 
+            "target_language_id",
+            "relationship_type", 
+            name="uq_lang_rel"
+        ),
     )
 
     def __repr__(self):
@@ -366,33 +429,81 @@ class Dialect(db.Model):
                            onupdate=lambda: datetime.now(timezone.utc))
 
     # Phase 1
-    language = db.relationship("Language", back_populates="dialects")
-    parent   = db.relationship("Dialect", remote_side="Dialect.id",
-                               back_populates="children")
-    children = db.relationship("Dialect", back_populates="parent",
-                               cascade="all, delete-orphan")
-    scripts  = db.relationship("Script", back_populates="dialect",
-                               cascade="all, delete-orphan")
+
+    language = db.relationship(
+        "Language", 
+        foreign_keys=[language_id],
+        back_populates="dialects"
+        )
+    
+    parent   = db.relationship(
+        "Dialect", 
+        remote_side="Dialect.id",
+        back_populates="children"
+        )
+    
+    children = db.relationship(
+        "Dialect", back_populates="parent",
+        cascade="all, delete-orphan"
+        )
+    
+    scripts  = db.relationship(
+        "Script", back_populates="dialect",
+        cascade="all, delete-orphan"
+        )
+    
     # Phase 2
-    words           = db.relationship("Word", back_populates="dialect")
-    pronunciations  = db.relationship("Pronunciation", back_populates="dialect",
-                                      cascade="all, delete-orphan")
-    inflected_forms = db.relationship("InflectedForm", back_populates="dialect")
+    words           = db.relationship(
+        "Word", 
+        back_populates="dialect"
+        )
+    
+    pronunciations  = db.relationship(
+        "Pronunciation", 
+        back_populates="dialect",
+        cascade="all, delete-orphan"
+        )
+    
+    inflected_forms = db.relationship(
+        "InflectedForm", 
+        back_populates="dialect"
+        )
+    
     # Phase 3
-    grammar_rules   = db.relationship("GrammarRule", back_populates="dialect")
-    phonology_rules = db.relationship("PhonologyRule", back_populates="dialect",
-                                      cascade="all, delete-orphan",
-                                      order_by="PhonologyRule.rule_order")
+    grammar_rules   = db.relationship(
+        "GrammarRule", 
+        back_populates="dialect"
+        )
+    
+    phonology_rules = db.relationship(
+        "PhonologyRule", 
+        back_populates="dialect",
+        cascade="all, delete-orphan",
+        order_by="PhonologyRule.rule_order"
+        )
+    
     # Phase 4
-    idioms             = db.relationship("Idiom", back_populates="dialect")
-    translation_memory = db.relationship("TranslationMemory",
-                                         back_populates="dialect",
-                                         cascade="all, delete-orphan")
+    idioms             = db.relationship(
+        "Idiom",
+        back_populates="dialect"
+        )
+    
+    translation_memory = db.relationship(
+        "TranslationMemory",
+        back_populates="dialect",
+        cascade="all, delete-orphan"
+        )
+    
     # Phase 6
-    etymology_events = db.relationship("EtymologyEvent",
-                                       back_populates="dialect")
-    sample_texts     = db.relationship("SampleText",
-                                       back_populates="dialect")
+    etymology_events = db.relationship(
+        "EtymologyEvent",
+        back_populates="dialect"
+        )
+    
+    sample_texts     = db.relationship(
+        "SampleText",
+        back_populates="dialect"
+        )
 
     def __repr__(self):
         return f"<Dialect {self.name!r} (lang={self.language_id})>"
@@ -429,10 +540,17 @@ class Script(db.Model):
     created_at         = db.Column(db.DateTime,
                                    default=lambda: datetime.now(timezone.utc))
 
-    dialect = db.relationship("Dialect", back_populates="scripts")
-    glyphs  = db.relationship("Glyph", back_populates="script",
-                              cascade="all, delete-orphan",
-                              order_by="Glyph.glyph_order")
+    dialect = db.relationship(
+        "Dialect", 
+        back_populates="scripts"
+        )
+    
+    glyphs  = db.relationship(
+        "Glyph", 
+        back_populates="script",
+        cascade="all, delete-orphan",
+        order_by="Glyph.glyph_order"
+        )
 
     def __repr__(self):
         return f"<Script {self.name!r} ({self.script_type.value})>"
@@ -460,7 +578,10 @@ class Glyph(db.Model):
     glyph_order       = db.Column(db.Integer, default=0)
     contextual_notes  = db.Column(db.Text)
 
-    script = db.relationship("Script", back_populates="glyphs")
+    script = db.relationship(
+        "Script", 
+        back_populates="glyphs"
+        )
 
     __table_args__ = (
         db.UniqueConstraint("script_id", "script_code", name="uq_glyph_code"),
@@ -483,39 +604,66 @@ class Word(db.Model):
     """
     __tablename__ = "words"
 
-    id          = db.Column(db.Integer, primary_key=True)
-    language_id = db.Column(db.Integer, db.ForeignKey("languages.id",
+    id           = db.Column(db.Integer, primary_key=True)
+    language_id  = db.Column(db.Integer, db.ForeignKey("languages.id",
                             ondelete="CASCADE"), nullable=False)
-    dialect_id  = db.Column(db.Integer, db.ForeignKey("dialects.id",
+    dialect_id   = db.Column(db.Integer, db.ForeignKey("dialects.id",
                             ondelete="SET NULL"), nullable=True)
 
     lemma        = db.Column(db.String(255), nullable=False)
     romanization = db.Column(db.String(255))
     script_code  = db.Column(db.String(40))
 
-    pos         = db.Column(db.Enum(PartOfSpeech), nullable=False)
-    pos_subtype = db.Column(db.String(80))
-    register    = db.Column(db.Enum(Register), nullable=False,
+    pos          = db.Column(db.Enum(PartOfSpeech), nullable=False)
+    pos_subtype  = db.Column(db.String(80))
+    register     = db.Column(db.Enum(Register), nullable=False,
                             default=Register.neutral)
 
-    notes      = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+    notes        = db.Column(db.Text)
+    created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    language        = db.relationship("Language", back_populates="words")
-    dialect         = db.relationship("Dialect",  back_populates="words")
-    senses          = db.relationship("Sense", back_populates="word",
-                                      cascade="all, delete-orphan",
-                                      order_by="Sense.sense_order")
-    pronunciations  = db.relationship("Pronunciation", back_populates="word",
-                                      cascade="all, delete-orphan")
-    inflected_forms = db.relationship("InflectedForm", back_populates="word",
-                                      cascade="all, delete-orphan")
-    word_paradigms  = db.relationship("WordParadigm", back_populates="word",
-                                      cascade="all, delete-orphan")
+    language        = db.relationship(
+        "Language", 
+        back_populates="words"
+        )
+    
+    dialect         = db.relationship(
+        "Dialect",  
+        back_populates="words"
+        )
+
+    senses          = db.relationship(
+        "Sense", 
+        back_populates="word",
+        cascade="all, delete-orphan",
+        order_by="Sense.sense_order"
+        )
+    
+    pronunciations  = db.relationship(
+        "Pronunciation", 
+        back_populates="word",
+        cascade="all, delete-orphan"
+        )
+    
+    inflected_forms = db.relationship(
+        "InflectedForm", 
+        back_populates="word",
+        cascade="all, delete-orphan"
+        )
+    
+    word_paradigms  = db.relationship(
+        "WordParadigm", 
+        back_populates="word",
+        cascade="all, delete-orphan"
+        )
+    
     # Phase 4 — word may appear in idioms via IdiomWord junction
-    idiom_words     = db.relationship("IdiomWord", back_populates="word")
+    idiom_words     = db.relationship(
+        "IdiomWord", 
+        back_populates="word"
+        )
 
     def __repr__(self):
         return f"<Word {self.lemma!r} ({self.pos.value})>"
@@ -549,7 +697,10 @@ class Morpheme(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    language = db.relationship("Language", back_populates="morphemes")
+    language = db.relationship(
+        "Language", 
+        back_populates="morphemes"
+        )
 
     def __repr__(self):
         return (f"<Morpheme {self.form!r} "
@@ -580,10 +731,16 @@ class Sense(db.Model):
     example_translation = db.Column(db.Text)
     notes               = db.Column(db.Text)
 
-    word            = db.relationship("Word", back_populates="senses")
-    semantic_fields = db.relationship("SemanticField",
-                                      secondary="sense_fields",
-                                      back_populates="senses")
+    word            = db.relationship(
+        "Word", 
+        back_populates="senses"
+        )
+    
+    semantic_fields = db.relationship(
+        "SemanticField",
+        secondary="sense_fields",
+        back_populates="senses"
+        )
 
     def __repr__(self):
         preview = (self.definition or "")[:40]
@@ -600,11 +757,22 @@ class SemanticField(db.Model):
                                               ondelete="SET NULL"), nullable=True)
     description     = db.Column(db.Text)
 
-    parent   = db.relationship("SemanticField", remote_side="SemanticField.id",
-                               back_populates="children")
-    children = db.relationship("SemanticField", back_populates="parent")
-    senses   = db.relationship("Sense", secondary="sense_fields",
-                               back_populates="semantic_fields")
+    parent   = db.relationship(
+        "SemanticField", 
+        remote_side="SemanticField.id",
+        back_populates="children"
+        )
+    
+    children = db.relationship(
+        "SemanticField", 
+        back_populates="parent"
+        )
+    
+    senses   = db.relationship(
+        "Sense", 
+        secondary="sense_fields",
+        back_populates="semantic_fields"
+        )
 
     def __repr__(self):
         return f"<SemanticField {self.name!r}>"
@@ -625,8 +793,15 @@ class Pronunciation(db.Model):
     audio_url    = db.Column(db.String(512))
     notes        = db.Column(db.Text)
 
-    word    = db.relationship("Word",    back_populates="pronunciations")
-    dialect = db.relationship("Dialect", back_populates="pronunciations")
+    word    = db.relationship(
+        "Word",    
+        back_populates="pronunciations"
+        )
+    
+    dialect = db.relationship(
+        "Dialect", 
+        back_populates="pronunciations"
+        )
 
     __table_args__ = (
         db.UniqueConstraint("word_id", "dialect_id", name="uq_pronunciation"),
@@ -649,12 +824,22 @@ class InflectionParadigm(db.Model):
     pos         = db.Column(db.Enum(PartOfSpeech))
     description = db.Column(db.Text)
 
-    language        = db.relationship("Language",
-                                      back_populates="inflection_paradigms")
-    word_paradigms  = db.relationship("WordParadigm", back_populates="paradigm",
-                                      cascade="all, delete-orphan")
-    inflected_forms = db.relationship("InflectedForm", back_populates="paradigm",
-                                      cascade="all, delete-orphan")
+    language        = db.relationship(
+        "Language",
+        back_populates="inflection_paradigms"
+        )
+    
+    word_paradigms  = db.relationship(
+        "WordParadigm", 
+        back_populates="paradigm",
+        cascade="all, delete-orphan"
+        )
+    
+    inflected_forms = db.relationship(
+        "InflectedForm",
+        back_populates="paradigm",
+        cascade="all, delete-orphan"
+        )
 
     def __repr__(self):
         return f"<InflectionParadigm {self.name!r}>"
@@ -669,8 +854,15 @@ class WordParadigm(db.Model):
     paradigm_id = db.Column(db.Integer, db.ForeignKey("inflection_paradigms.id",
                             ondelete="CASCADE"), primary_key=True)
 
-    word     = db.relationship("Word",               back_populates="word_paradigms")
-    paradigm = db.relationship("InflectionParadigm", back_populates="word_paradigms")
+    word     = db.relationship(
+        "Word",               
+        back_populates="word_paradigms"
+        )
+    
+    paradigm = db.relationship(
+        "InflectionParadigm", 
+        back_populates="word_paradigms"
+        )
 
 
 class InflectedForm(db.Model):
@@ -694,9 +886,20 @@ class InflectedForm(db.Model):
     script_code = db.Column(db.String(40))
     ipa         = db.Column(db.String(255))
 
-    word     = db.relationship("Word",               back_populates="inflected_forms")
-    paradigm = db.relationship("InflectionParadigm", back_populates="inflected_forms")
-    dialect  = db.relationship("Dialect",            back_populates="inflected_forms")
+    word     = db.relationship(
+        "Word",               
+        back_populates="inflected_forms"
+        )
+    
+    paradigm = db.relationship(
+        "InflectionParadigm", 
+        back_populates="inflected_forms"
+        )
+    
+    dialect  = db.relationship(
+        "Dialect",            
+        back_populates="inflected_forms"
+        )
 
     __table_args__ = (
         db.UniqueConstraint("word_id", "paradigm_id", "form_label", "dialect_id",
@@ -748,8 +951,14 @@ class GrammarRule(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    language = db.relationship("Language", back_populates="grammar_rules")
-    dialect  = db.relationship("Dialect",  back_populates="grammar_rules")
+    language = db.relationship(
+        "Language", 
+        back_populates="grammar_rules"
+        )
+    dialect  = db.relationship(
+        "Dialect",  
+        back_populates="grammar_rules"
+        )
 
     __table_args__ = (
         db.Index("ix_grammar_rules_lang_type_order",
@@ -803,7 +1012,10 @@ class PhonologyRule(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    dialect = db.relationship("Dialect", back_populates="phonology_rules")
+    dialect = db.relationship(
+        "Dialect", 
+        back_populates="phonology_rules"
+        )
 
     __table_args__ = (
         db.Index("ix_phonology_rules_dialect_order", "dialect_id", "rule_order"),
@@ -883,11 +1095,22 @@ class Idiom(db.Model):
     updated_at  = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                             onupdate=lambda: datetime.now(timezone.utc))
 
-    language    = db.relationship("Language", back_populates="idioms")
-    dialect     = db.relationship("Dialect",  back_populates="idioms")
-    idiom_words = db.relationship("IdiomWord", back_populates="idiom",
-                                  cascade="all, delete-orphan",
-                                  order_by="IdiomWord.position")
+    language    = db.relationship(
+        "Language", 
+        back_populates="idioms"
+        )
+    
+    dialect     = db.relationship(
+        "Dialect",  
+        back_populates="idioms"
+        )
+    
+    idiom_words = db.relationship(
+        "IdiomWord", 
+        back_populates="idiom",
+        cascade="all, delete-orphan",
+        order_by="IdiomWord.position"
+        )
 
     __table_args__ = (
         db.Index("ix_idioms_phrase", "language_id", "phrase"),
@@ -930,9 +1153,19 @@ class IdiomWord(db.Model):
                                   # literal token as it appears in the phrase,
                                   # useful when word_id is NULL or inflected
 
-    idiom          = db.relationship("Idiom", back_populates="idiom_words")
-    word           = db.relationship("Word",  back_populates="idiom_words")
-    inflected_form = db.relationship("InflectedForm")
+    idiom          = db.relationship(
+        "Idiom", 
+        back_populates="idiom_words"
+        )
+    
+    word           = db.relationship(
+        "Word",  
+        back_populates="idiom_words"
+        )
+    
+    inflected_form = db.relationship(
+        "InflectedForm"
+        )
 
     __table_args__ = (
         db.UniqueConstraint("idiom_id", "position", name="uq_idiom_position"),
@@ -1011,13 +1244,21 @@ class TranslationMemory(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    language        = db.relationship("Language",
-                                      foreign_keys=[language_id],
-                                      back_populates="translation_memory")
-    source_language = db.relationship("Language",
-                                      foreign_keys=[source_language_id])
-    dialect         = db.relationship("Dialect",
-                                      back_populates="translation_memory")
+    language        = db.relationship(
+        "Language",
+        foreign_keys=[language_id],
+        back_populates="translation_memory"
+        )
+    
+    source_language = db.relationship(
+        "Language",
+        foreign_keys=[source_language_id]
+        )
+    
+    dialect         = db.relationship(
+        "Dialect",
+        back_populates="translation_memory"
+        )
 
     __table_args__ = (
         db.Index("ix_tm_language_status", "language_id", "status"),
@@ -1073,11 +1314,22 @@ class EtymologyArticle(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    language = db.relationship("Language", back_populates="etymology_articles")
-    dialect  = db.relationship("Dialect",  foreign_keys=[dialect_id])
-    events   = db.relationship("EtymologyEvent", back_populates="article",
-                               cascade="all, delete-orphan",
-                               order_by="EtymologyEvent.era_sort_key")
+    language = db.relationship(
+        "Language", 
+        back_populates="etymology_articles"
+        )
+    
+    dialect  = db.relationship(
+        "Dialect",  
+        foreign_keys=[dialect_id]
+        )
+    
+    events   = db.relationship(
+        "EtymologyEvent",
+        back_populates="article",
+        cascade="all, delete-orphan",
+        order_by="EtymologyEvent.era_sort_key"
+        )
 
     def __repr__(self):
         return f"<EtymologyArticle {self.title!r} (lang={self.language_id})>"
@@ -1140,11 +1392,27 @@ class EtymologyEvent(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    article        = db.relationship("EtymologyArticle", back_populates="events")
-    dialect        = db.relationship("Dialect", back_populates="etymology_events")
-    phonology_rule = db.relationship("PhonologyRule")
-    grammar_rule   = db.relationship("GrammarRule")
-    word           = db.relationship("Word")
+    article        = db.relationship(
+        "EtymologyArticle", 
+        back_populates="events"
+        )
+    
+    dialect        = db.relationship(
+        "Dialect", 
+        back_populates="etymology_events"
+        )
+    
+    phonology_rule = db.relationship(
+        "PhonologyRule"
+        )
+    
+    grammar_rule   = db.relationship(
+        "GrammarRule"
+        )
+    
+    word           = db.relationship(
+        "Word"
+        )
 
     __table_args__ = (
         db.Index("ix_etymology_events_article_sort",
@@ -1210,8 +1478,15 @@ class SampleText(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
                            onupdate=lambda: datetime.now(timezone.utc))
 
-    language = db.relationship("Language", back_populates="sample_texts")
-    dialect  = db.relationship("Dialect",  back_populates="sample_texts")
+    language = db.relationship(
+        "Language", 
+        back_populates="sample_texts"
+        )
+    
+    dialect  = db.relationship(
+        "Dialect",  
+        back_populates="sample_texts"
+        )
 
     def __repr__(self):
         return (f"<SampleText {self.title!r} "

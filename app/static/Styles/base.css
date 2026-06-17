@@ -22,3 +22,30 @@ nav ul {
 nav ul li {
     padding: 14px 20px;
 }
+a {
+    text-decoration: none;
+}
+textarea {
+    padding: 5px;
+    border-radius: 5px;
+    font-family: 'Amita';
+    background-color: rgb(30, 30, 30);
+}
+button {
+    font-family: 'Amita';
+    border-radius: 5px;
+    background-color: rgb(30, 30, 30);
+    color: white;
+    box-shadow: 3px 3px 10px black;
+    padding: 20px;
+    margin: 40px;
+    transition: 0.3s ease all;
+    min-width: 200px;
+}
+button:hover {
+    font-family: 'Amita';
+    background-color: #333;
+    box-shadow: 8px 8px 10px black;
+    margin: 40px;
+    transform: translateY(-5px);
+}

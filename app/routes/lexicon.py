@@ -30,7 +30,7 @@ lexicon_bp = Blueprint("lexicon", __name__, url_prefix="/lexicon")
 # Words  (scoped to language; dialect optional filter)
 # ===========================================================================
 
-@lexicon_bp.route("/languages/<int:language_id>/words", methods=["GET", "POST"])
+@lexicon_bp.route("/<int:language_id>/words", methods=["GET", "POST"])
 def words(language_id):
     """
     GET  — list all words for a language.
@@ -59,7 +59,7 @@ def words(language_id):
     return jsonify(_word_detail(word)), 201
 
 
-@lexicon_bp.route("/languages/<int:language_id>/words/<int:word_id>",
+@lexicon_bp.route("/<int:language_id>/words/<int:word_id>",
                   methods=["GET", "PUT", "PATCH", "DELETE"])
 def word(language_id, word_id):
     """Single word — fetch, update, or delete."""
