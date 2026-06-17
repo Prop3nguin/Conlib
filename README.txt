@@ -1,14 +1,3 @@
-```mermaid
-erDiagram
-    LANGUAGE ||--o{ DIALECT : has
+# Database Schema
 
-    LANGUAGE {
-        int id
-        string name
-    }
-
-    DIALECT {
-        int id
-        string name
-    }
-```
+![Database ERD](docs/erd.png)
