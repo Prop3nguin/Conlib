@@ -254,7 +254,6 @@ class Language(db.Model):
 
     id          = db.Column(db.Integer, primary_key=True)
     name        = db.Column(db.String(120), nullable=False, unique=True)
-    native_name = db.Column(db.String(120))
     status      = db.Column(db.Enum(LanguageStatus), nullable=False,
                             default=LanguageStatus.constructed)
     description = db.Column(db.Text)
@@ -301,8 +300,8 @@ class Language(db.Model):
     )
 
     # Phase 2
-    words                = db.relationship(
-        "Word", 
+    word_form                = db.relationship(
+        "WordForm", 
         back_populates="language",
         cascade="all, delete-orphan"
         )
@@ -453,8 +452,8 @@ class Dialect(db.Model):
         )
     
     # Phase 2
-    words           = db.relationship(
-        "Word", 
+    word_form           = db.relationship(
+        "WordForm", 
         back_populates="dialect"
         )
     
@@ -596,78 +595,118 @@ class Glyph(db.Model):
 # Phase 2 — Core Lexicon
 # ===========================================================================
 
-class Word(db.Model):
-    """
-    A lexical entry at the language level.
-    dialect_id = NULL → shared across all dialects.
-    script_code → soft FK into glyphs.script_code, validated at route level.
-    """
-    __tablename__ = "words"
+class Lexeme(db.Model):
+    __tablename__ = "lexemes"
 
-    id           = db.Column(db.Integer, primary_key=True)
-    language_id  = db.Column(db.Integer, db.ForeignKey("languages.id",
-                            ondelete="CASCADE"), nullable=False)
-    dialect_id   = db.Column(db.Integer, db.ForeignKey("dialects.id",
-                            ondelete="SET NULL"), nullable=True)
+    id = db.Column(db.Integer, primary_key=True)
 
-    lemma        = db.Column(db.String(255), nullable=False)
-    romanization = db.Column(db.String(255))
-    script_code  = db.Column(db.String(40))
+    language_id = db.Column(
+        db.Integer,
+        db.ForeignKey("languages.id", ondelete="CASCADE"),
+        nullable=False
+    )
 
-    pos          = db.Column(db.Enum(PartOfSpeech), nullable=False)
-    pos_subtype  = db.Column(db.String(80))
-    register     = db.Column(db.Enum(Register), nullable=False,
-                            default=Register.neutral)
+    pos = db.Column(db.Enum(PartOfSpeech), nullable=False)
+    pos_subtype = db.Column(db.String(80))
 
-    notes        = db.Column(db.Text)
-    created_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at   = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
-                           onupdate=lambda: datetime.now(timezone.utc))
+    notes = db.Column(db.Text)
 
-    language        = db.relationship(
-        "Language", 
-        back_populates="words"
-        )
-    
-    dialect         = db.relationship(
-        "Dialect",  
-        back_populates="words"
-        )
+    created_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc)
+    )
 
-    senses          = db.relationship(
-        "Sense", 
-        back_populates="word",
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
+    )
+
+    language = db.relationship(
+        "Language",
+        back_populates="lexemes"
+    )
+
+    senses = db.relationship(
+        "Sense",
+        back_populates="lexeme",
         cascade="all, delete-orphan",
         order_by="Sense.sense_order"
-        )
-    
-    pronunciations  = db.relationship(
-        "Pronunciation", 
-        back_populates="word",
+    )
+
+    word_forms = db.relationship(
+        "WordForm",
+        back_populates="lexeme",
         cascade="all, delete-orphan"
-        )
-    
-    inflected_forms = db.relationship(
-        "InflectedForm", 
-        back_populates="word",
-        cascade="all, delete-orphan"
-        )
-    
-    word_paradigms  = db.relationship(
-        "WordParadigm", 
-        back_populates="word",
-        cascade="all, delete-orphan"
-        )
-    
-    # Phase 4 — word may appear in idioms via IdiomWord junction
-    idiom_words     = db.relationship(
-        "IdiomWord", 
-        back_populates="word"
-        )
+    )
 
     def __repr__(self):
-        return f"<Word {self.lemma!r} ({self.pos.value})>"
+        return f"<Lexeme {self.id}>"
+    
+class WordForm(db.Model):
+    __tablename__ = "word_forms"
 
+    id = db.Column(db.Integer, primary_key=True)
+
+    lexeme_id = db.Column(
+        db.Integer,
+        db.ForeignKey("lexemes.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    dialect_id = db.Column(
+        db.Integer,
+        db.ForeignKey("dialects.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    lemma = db.Column(db.String(255), nullable=False)
+
+    romanization = db.Column(db.String(255))
+
+    script_code = db.Column(db.String(40))
+
+    register = db.Column(
+        db.Enum(Register),
+        nullable=False,
+        default=Register.neutral
+    )
+
+    lexeme = db.relationship(
+        "Lexeme",
+        back_populates="word_forms"
+    )
+
+    dialect = db.relationship(
+        "Dialect",
+        back_populates="word_forms"
+    )
+
+    pronunciations = db.relationship(
+        "Pronunciation",
+        back_populates="word_form",
+        cascade="all, delete-orphan"
+    )
+
+    inflected_forms = db.relationship(
+        "InflectedForm",
+        back_populates="word_form",
+        cascade="all, delete-orphan"
+    )
+
+    word_paradigms = db.relationship(
+        "WordParadigm",
+        back_populates="word_form",
+        cascade="all, delete-orphan"
+    )
+
+    idiom_words = db.relationship(
+        "IdiomWord",
+        back_populates="word_form"
+    )
+
+    def __repr__(self):
+        return f"<WordForm {self.lemma!r}>"
 
 class Morpheme(db.Model):
     """
@@ -722,7 +761,7 @@ class Sense(db.Model):
     __tablename__ = "senses"
 
     id          = db.Column(db.Integer, primary_key=True)
-    word_id     = db.Column(db.Integer, db.ForeignKey("words.id",
+    lexemes_id     = db.Column(db.Integer, db.ForeignKey("lexemes.id",
                             ondelete="CASCADE"), nullable=False)
     sense_order = db.Column(db.Integer, nullable=False, default=1)
 
@@ -731,8 +770,8 @@ class Sense(db.Model):
     example_translation = db.Column(db.Text)
     notes               = db.Column(db.Text)
 
-    word            = db.relationship(
-        "Word", 
+    word_form            = db.relationship(
+        "WordForm", 
         back_populates="senses"
         )
     
@@ -744,7 +783,7 @@ class Sense(db.Model):
 
     def __repr__(self):
         preview = (self.definition or "")[:40]
-        return f"<Sense word={self.word_id} order={self.sense_order} {preview!r}>"
+        return f"<Sense word={self.lexemes_id} order={self.sense_order} {preview!r}>"
 
 
 class SemanticField(db.Model):
@@ -783,7 +822,7 @@ class Pronunciation(db.Model):
     __tablename__ = "pronunciations"
 
     id         = db.Column(db.Integer, primary_key=True)
-    word_id    = db.Column(db.Integer, db.ForeignKey("words.id",
+    lexemes_id    = db.Column(db.Integer, db.ForeignKey("lexemes.id",
                            ondelete="CASCADE"), nullable=False)
     dialect_id = db.Column(db.Integer, db.ForeignKey("dialects.id",
                            ondelete="CASCADE"), nullable=False)
@@ -793,8 +832,8 @@ class Pronunciation(db.Model):
     audio_url    = db.Column(db.String(512))
     notes        = db.Column(db.Text)
 
-    word    = db.relationship(
-        "Word",    
+    word_form    = db.relationship(
+        "WordForm",    
         back_populates="pronunciations"
         )
     
@@ -804,11 +843,11 @@ class Pronunciation(db.Model):
         )
 
     __table_args__ = (
-        db.UniqueConstraint("word_id", "dialect_id", name="uq_pronunciation"),
+        db.UniqueConstraint("lexemes_id", "dialect_id", name="uq_pronunciation"),
     )
 
     def __repr__(self):
-        return (f"<Pronunciation word={self.word_id} "
+        return (f"<Pronunciation word={self.lexemes_id} "
                 f"dialect={self.dialect_id} /{self.ipa}/>")
 
 
@@ -849,13 +888,13 @@ class WordParadigm(db.Model):
     """Junction: which paradigm(s) a word follows."""
     __tablename__ = "word_paradigms"
 
-    word_id     = db.Column(db.Integer, db.ForeignKey("words.id",
+    lexemes_id     = db.Column(db.Integer, db.ForeignKey("lexemes.id",
                             ondelete="CASCADE"), primary_key=True)
     paradigm_id = db.Column(db.Integer, db.ForeignKey("inflection_paradigms.id",
                             ondelete="CASCADE"), primary_key=True)
 
-    word     = db.relationship(
-        "Word",               
+    word_form     = db.relationship(
+        "WordForm",               
         back_populates="word_paradigms"
         )
     
@@ -874,7 +913,7 @@ class InflectedForm(db.Model):
     __tablename__ = "inflected_forms"
 
     id          = db.Column(db.Integer, primary_key=True)
-    word_id     = db.Column(db.Integer, db.ForeignKey("words.id",
+    lexemes_id     = db.Column(db.Integer, db.ForeignKey("lexemes.id",
                             ondelete="CASCADE"), nullable=False)
     paradigm_id = db.Column(db.Integer, db.ForeignKey("inflection_paradigms.id",
                             ondelete="CASCADE"), nullable=False)
@@ -886,8 +925,8 @@ class InflectedForm(db.Model):
     script_code = db.Column(db.String(40))
     ipa         = db.Column(db.String(255))
 
-    word     = db.relationship(
-        "Word",               
+    word_form     = db.relationship(
+        "WordForm",               
         back_populates="inflected_forms"
         )
     
@@ -902,13 +941,13 @@ class InflectedForm(db.Model):
         )
 
     __table_args__ = (
-        db.UniqueConstraint("word_id", "paradigm_id", "form_label", "dialect_id",
+        db.UniqueConstraint("lexemes_id", "paradigm_id", "form_label", "dialect_id",
                             name="uq_inflected_form"),
     )
 
     def __repr__(self):
         return (f"<InflectedForm {self.form_label}={self.form!r} "
-                f"word={self.word_id}>")
+                f"word={self.lexemes_id}>")
 
 
 # ===========================================================================
@@ -1132,7 +1171,7 @@ class IdiomWord(db.Model):
     inflected_form_id — optional FK to a specific InflectedForm if this slot
                         always uses a particular inflected form (e.g. the verb
                         is always in the imperative)
-    word_id        — NULL is allowed: the slot is a function word or particle
+    lexemes_id        — NULL is allowed: the slot is a function word or particle
                      that exists in the phrase but has no lexicon entry yet
     """
     __tablename__ = "idiom_words"
@@ -1140,7 +1179,7 @@ class IdiomWord(db.Model):
     id        = db.Column(db.Integer, primary_key=True)
     idiom_id  = db.Column(db.Integer, db.ForeignKey("idioms.id",
                           ondelete="CASCADE"), nullable=False)
-    word_id   = db.Column(db.Integer, db.ForeignKey("words.id",
+    lexemes_id   = db.Column(db.Integer, db.ForeignKey("lexemes.id",
                           ondelete="SET NULL"), nullable=True)
 
     position          = db.Column(db.Integer, nullable=False)
@@ -1151,15 +1190,15 @@ class IdiomWord(db.Model):
                                   nullable=True)
     surface_form      = db.Column(db.String(255))
                                   # literal token as it appears in the phrase,
-                                  # useful when word_id is NULL or inflected
+                                  # useful when lexemes_id is NULL or inflected
 
     idiom          = db.relationship(
         "Idiom", 
         back_populates="idiom_words"
         )
     
-    word           = db.relationship(
-        "Word",  
+    word_form           = db.relationship(
+        "WordForm",  
         back_populates="idiom_words"
         )
     
@@ -1173,7 +1212,7 @@ class IdiomWord(db.Model):
 
     def __repr__(self):
         return (f"<IdiomWord idiom={self.idiom_id} "
-                f"pos={self.position} word={self.word_id}>")
+                f"pos={self.position} word={self.lexemes_id}>")
 
 
 class TranslationMemory(db.Model):
@@ -1385,7 +1424,7 @@ class EtymologyEvent(db.Model):
                                   nullable=True)
 
     # Optional cross-link to a word whose etymology this event explains
-    word_id = db.Column(db.Integer, db.ForeignKey("words.id",
+    lexemes_id = db.Column(db.Integer, db.ForeignKey("lexemes.id",
                         ondelete="SET NULL"), nullable=True)
 
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -1410,8 +1449,8 @@ class EtymologyEvent(db.Model):
         "GrammarRule"
         )
     
-    word           = db.relationship(
-        "Word"
+    word_form           = db.relationship(
+        "WordForm"
         )
 
     __table_args__ = (
