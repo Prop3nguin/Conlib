@@ -119,15 +119,4 @@ def glyphs(script_id):
     # Implementation for handling glyphs view
     pass
 
-@languages_bp.route('/DBStructure', methods=['GET', 'POST'])
-def db_structure():
-    
-    context = {
-        "languages": Language.query.all(),
-        "dialects": Dialect.query.all(),
-        "scripts": Script.query.all(),
-        "glyphs": Glyph.query.all()
-    }
-
-    return render_template('db_structure.html', **context)
 

@@ -6,6 +6,18 @@ ConLib - Languages
 
 {% block style %}
     <style>
+/*
+primary Background : rgb(18, 24, 38)
+
+gold accent : rgb(201, 167, 92) 
+
+    Reds ;
+Burgandy : rgb(68, 22, 35)
+
+Dark crimson : rgb(92, 24, 34)
+
+Oxblood : rgb(58, 16, 24) 
+*/
         ul {
             list-style-type: none;
             padding: 10;
@@ -13,21 +25,41 @@ ConLib - Languages
         ul li li a {
             text-indent: 50px;
         }
+        .divider {
+        text-align: center;
+        margin: 2rem 0;
+        opacity: .6;
+        }
+        .language-page::before {
+        content: "𐌰𐌱𐌲𐌰𐌱𐌲𐌰𐌱𐌲";
+        position: fixed;
+        font-size: 20rem;
+        opacity: .03;
+        pointer-events: none;
+        }
+        h1 {
+            text-align: center;
+            margin: 50px;
+            padding: 50px;
+        }
     </style>
     
 {% endblock %}
 
 {% block content %}
-<h1>Languages</h1>
-    <ul>
-        {% for language in languages %}
-        <li class="InstanceTitle"><a href="/{{ language.id }}">{{ language.name }}</a> - <a href="/delete/{{ language.id }}">Delete</a></li>
-        <li>|-- Dialects: 
-            {% for dialect in language.dialects %}
-            <li>> > >|-- <a href="/{{ language.id }}/dialects/{{ dialect.id }}">{{ dialect.name }}</a></li>
+<div class="language-page">
+    <h1>Constructed Library (ConLib)</h1>
+        <div class="divider">✦ ◈ ✦</div>
+        <ul>
+            {% for language in languages %}
+            <li class="InstanceTitle"><a href="/{{ language.id }}">{{ language.name }}</a> - <a href="/delete/{{ language.id }}">Delete</a></li>
+            <li>|-- Dialects: 
+                {% for dialect in language.dialects %}
+                <li>> > >|-- <a href="/{{ language.id }}/dialects/{{ dialect.id }}">{{ dialect.name }}</a></li>
+                {% endfor %}
+            </li>
+            <li>|-- Articles: {{ language.articles|length }}</li>
             {% endfor %}
-        </li>
-        <li>|-- Articles: {{ language.articles|length }}</li>
-        {% endfor %}
-    </ul>
+        </ul>
+</div>
 {% endblock %}

@@ -13,10 +13,12 @@
 
         <nav>
             <ul>
-                <li><a href="/">Languages</a></li>
-                <li><a href="/translator">Translator</a></li>
-                <li><a href="/export">Export</a></li>
-                <li><a href="/DBStructure">DB Structure</a></li>
+                <li class="navSymbol">◈</li>
+                <li><a href="{{ url_for( 'languages.languages_home' ) }}">Languages</a></li>
+                <li><a href="{{ url_for( 'translator.translator_home')}}">Translator</a></li>
+                <li><a href="{{ url_for( 'export.export_home' ) }}">Export</a></li>
+                <li><a href="{{ url_for( 'languages.add_language') }}">Add</a></li>
+                <li class="navSymbol">◈</li>
             </ul>
         </nav>
 

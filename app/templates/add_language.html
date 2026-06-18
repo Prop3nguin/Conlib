@@ -6,6 +6,18 @@ Conlib - Add Language
 
 {% block style %}
     <style>
+/*
+primary Background : rgb(18, 24, 38)
+
+gold accent : rgb(201, 167, 92) 
+
+    Reds ;
+Burgandy : rgb(68, 22, 35)
+
+Dark crimson : rgb(92, 24, 34)
+
+Oxblood : rgb(58, 16, 24) 
+*/
         h1 {
             font-family: 'Amita';
             font-weight: bold;
@@ -13,18 +25,30 @@ Conlib - Add Language
             padding: 40px;
             margin: 40px;
             border-radius: 10px;
-            background-color: rgb(30, 30, 30);
+            background-image: linear-gradient( 45deg, var(--DarkCrimson), var(--Oxblood)) ;
         }
         h3{
             justify-self: center;
             padding: 40px;
-            background-color: rgb(30, 30, 30);
+            background-color: var(--DarkCrimson);
             transform: translateY(10px);
             border-top-left-radius: 10px;
             border-top-right-radius: 10px;
         }
+        h3::before {
+            content: '◈';
+            position: relative;
+            right: 20px;
+            color: var(--GoldAccentColor);
+        }
+        h3::after {
+            content: '◈';
+            position: relative;
+            left: 20px;
+            color: var(--GoldAccentColor);
+        }
         form {
-            background-color: rgb(30, 30, 30);
+            background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood)) ;
             border-radius: 15px;
             margin: 10px;
         }
@@ -35,8 +59,8 @@ Conlib - Add Language
             justify-content: center;
         }
         form ul li {
+            background-color: var(--Oxblood);
             border-radius: 5px;
-            background-color: #333;
             padding: 20px;
             margin-top: 20px;
             margin-bottom: 20px;
@@ -55,7 +79,10 @@ Conlib - Add Language
             border-radius: 5px;
             font-family: 'Amita';
             margin-bottom: 10px;
-            background-color: rgb(30, 30, 30);
+            background-color: var(--PrimaryBackgroundColor);
+        }
+        textarea {
+            background-color: var(--PrimaryBackgroundColor);
         }
         .submit {
             width: 90%;
@@ -65,7 +92,7 @@ Conlib - Add Language
             padding: 0;
         }
         .disclaimer {
-            color: #999;
+            color: var(--FaintTextColor);
             margin-top: 20px;
             text-indent: 20px;
         }
@@ -74,7 +101,8 @@ Conlib - Add Language
 
 {% block content %}
     <h1>Add Language</h1>
-    <h3>-- Required Language Information --</h3>
+    <div class="divider">✦ ◈ ✦</div>
+    <h3>Required Language Information</h3>
     <form method="POST" action="{{ url_for('languages.add_language') }}">
         <ul>
             <li><label for="name">Name:</label>

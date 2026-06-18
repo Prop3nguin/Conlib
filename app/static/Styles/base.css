@@ -1,17 +1,43 @@
+/*
+
+primary Background : rgb(18, 24, 38)
+
+gold accent : rgb(201, 167, 92) 
+
+    Reds ;
+Burgandy : rgb(68, 22, 35)
+
+Dark crimson : rgb(92, 24, 34)
+
+Oxblood : rgb(58, 16, 24)
+
+*/
+
+:root {
+    --PrimaryBackgroundColor: rgb(18, 24, 38);
+    --GoldAccentColor: rgb(201, 167, 92);
+    --Burgandy: rgb(68, 22, 35);
+    --DarkCrimson: rgb(92, 24, 34); 
+    --Oxblood: rgb(58, 16, 24);
+    --LightTextColor: rgb(240, 236, 224);
+    --DarkTextColor: rgb(45, 37, 26);
+    --FaintTextColor: rgb(240, 236, 224, 0.3);
+}
+
 * {
     padding: 0;
     margin: 0;
-    color: white;
+    color: var(--LightTextColor);
 }
 body {
     font-family: 'uncial antiqua';
     font-weight: 400;
     font-style: normal;
-    background-color: #333;
+    background-color: var(--PrimaryBackgroundColor);
 }
 nav {
     font-family: 'Amita';
-    background-color: #202020;
+    background-color: var(--DarkCrimson);
     overflow: hidden;
 }
 nav ul {
@@ -24,18 +50,19 @@ nav ul li {
 }
 a {
     text-decoration: none;
+    color: var(--GoldAccentColor);
+    text-shadow: 5px 2px 5px black;
 }
 textarea {
     padding: 5px;
     border-radius: 5px;
     font-family: 'Amita';
-    background-color: rgb(30, 30, 30);
+    background-color: var(--PrimaryBackroundColor);
 }
 button {
     font-family: 'Amita';
     border-radius: 5px;
-    background-color: rgb(30, 30, 30);
-    color: white;
+    background-color: var(--PrimaryBackroundColor);
     box-shadow: 3px 3px 10px black;
     padding: 20px;
     margin: 40px;
@@ -44,8 +71,18 @@ button {
 }
 button:hover {
     font-family: 'Amita';
-    background-color: #333;
+    background-color: var(--PrimaryBackroundColor);
     box-shadow: 8px 8px 10px black;
     margin: 40px;
     transform: translateY(-5px);
+}
+.navSymbol {
+    margin-left: 15%;
+    margin-right: 15%;
+}
+.divider{
+    color: var(--GoldAccentColor);
+    opacity: 0.6;
+    text-align: center;
+    margin:50px;
 }
