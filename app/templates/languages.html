@@ -10,17 +10,21 @@ ConLib - Languages
             list-style-type: none;
             padding: 10;
         }
+        ul li li a {
+            text-indent: 50px;
+        }
     </style>
+    
 {% endblock %}
 
 {% block content %}
 <h1>Languages</h1>
     <ul>
         {% for language in languages %}
-        <li class="InstanceTitle"><a href="{{ url_for('languages.language_detail', language_id=language.id) }}">{{ language.name }}</a></li>
+        <li class="InstanceTitle"><a href="/{{ language.id }}">{{ language.name }}</a> - <a href="/delete/{{ language.id }}">Delete</a></li>
         <li>|-- Dialects: 
             {% for dialect in language.dialects %}
-            <li><a href="{{ url_for('languages.dialects', language_id=language.id, dialect_id=dialect.id) }}">|   {{ dialect.name }}</a></li>
+            <li>> > >|-- <a href="/{{ language.id }}/dialects/{{ dialect.id }}">{{ dialect.name }}</a></li>
             {% endfor %}
         </li>
         <li>|-- Articles: {{ language.articles|length }}</li>

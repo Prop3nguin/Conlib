@@ -101,9 +101,10 @@ def delete_language(language_id):
 
 @languages_bp.route('/<int:language_id>/dialects/<int:dialect_id>', methods=['GET', 'POST'])
 def dialects(dialect_id, language_id):
-    
+    # View specific page for a single dialect of a language
     context = {
-        "dialects" : Dialect.query.all(),
+        "language": Language.query.get_or_404(language_id),
+        "dialect" : Dialect.query.get_or_404(dialect_id)
     }
 
     return render_template('dialect_detail.html', **context)

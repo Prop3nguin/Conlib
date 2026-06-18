@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>{% block title %}Conlang Library{% endblock %}</title>
-        <link href="../static/Styles/base.css" rel="stylesheet" />
+        <link href="{{ url_for('static', filename='Styles/base.css')}}" rel="stylesheet" />
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Amita:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">

@@ -1,8 +1,8 @@
-"""initial schema
+"""InitializeFinalStructure
 
-Revision ID: 18a4634fbdbc
+Revision ID: 6b0cf12c67cc
 Revises: 
-Create Date: 2026-06-15 13:25:37.864913
+Create Date: 2026-06-18 00:00:10.795234
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '18a4634fbdbc'
+revision = '6b0cf12c67cc'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -56,11 +56,23 @@ def upgrade():
     sa.ForeignKeyConstraint(['parent_dialect_id'], ['dialects.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('etymology_articles',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('language_id', sa.Integer(), nullable=False),
+    sa.Column('title', sa.String(length=255), nullable=False),
+    sa.Column('article_type', sa.Enum('history', 'dialect', 'vocabulary', 'loanwords', 'cultural', 'other', name='articletype'), nullable=False),
+    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('last_exported_at', sa.DateTime(), nullable=True),
+    sa.Column('exported_filename', sa.String(length=255), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('inflection_paradigms',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('language_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=False),
-    sa.Column('pos', sa.Enum('noun', 'verb', 'adjective', 'adverb', 'pronoun', 'numeral', 'particle', 'conjunction', 'adposition', 'interjection', 'root', 'other', name='partofspeech'), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
     sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
@@ -82,12 +94,6 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('language_id', sa.Integer(), nullable=False),
     sa.Column('form', sa.String(length=120), nullable=False),
-    sa.Column('romanization', sa.String(length=120), nullable=True),
-    sa.Column('script_code', sa.String(length=40), nullable=True),
-    sa.Column('ipa', sa.String(length=120), nullable=True),
-    sa.Column('morpheme_type', sa.Enum('root', 'prefix', 'suffix', 'infix', 'circumfix', 'clitic', name='morphemetype'), nullable=False),
-    sa.Column('pos', sa.Enum('noun', 'verb', 'adjective', 'adverb', 'pronoun', 'numeral', 'particle', 'conjunction', 'adposition', 'interjection', 'root', 'other', name='partofspeech'), nullable=True),
-    sa.Column('gloss', sa.String(length=80), nullable=True),
     sa.Column('meaning', sa.Text(), nullable=True),
     sa.Column('notes', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -95,40 +101,40 @@ def upgrade():
     sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('grammar_rules',
+    op.create_table('etymology_events',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('language_id', sa.Integer(), nullable=False),
     sa.Column('dialect_id', sa.Integer(), nullable=True),
-    sa.Column('name', sa.String(length=200), nullable=False),
-    sa.Column('rule_type', sa.Enum('morphology', 'syntax', 'phonology', 'cv_structure', name='grammarruletype'), nullable=False),
-    sa.Column('rule_order', sa.Integer(), nullable=False),
-    sa.Column('pattern', sa.Text(), nullable=True),
-    sa.Column('result', sa.Text(), nullable=True),
-    sa.Column('example', sa.Text(), nullable=True),
-    sa.Column('notes', sa.Text(), nullable=True),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('event_type', sa.Enum('sound_change', 'grammar_change', 'dialect_split', 'contact_event', 'cultural_event', 'lexical_event', 'other', name='eventtype'), nullable=False),
+    sa.Column('era_label', sa.String(length=120), nullable=False),
+    sa.Column('era_sort_key', sa.Integer(), nullable=False),
+    sa.Column('title', sa.String(length=255), nullable=False),
+    sa.Column('description', sa.Text(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['dialect_id'], ['dialects.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('grammar_rules', schema=None) as batch_op:
-        batch_op.create_index('ix_grammar_rules_lang_type_order', ['language_id', 'rule_type', 'rule_order'], unique=False)
+    with op.batch_alter_table('etymology_events', schema=None) as batch_op:
+        batch_op.create_index('ix_etymology_events_lang_sort', ['language_id', 'era_sort_key'], unique=False)
 
+    op.create_table('grammar_rules',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('dialect_id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=200), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['dialect_id'], ['dialects.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('idioms',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('language_id', sa.Integer(), nullable=False),
     sa.Column('dialect_id', sa.Integer(), nullable=True),
     sa.Column('phrase', sa.String(length=512), nullable=False),
-    sa.Column('phrase_script', sa.String(length=512), nullable=True),
-    sa.Column('idiom_type', sa.Enum('idiom', 'collocation', 'proverb', 'greeting', 'other', name='idiomtype'), nullable=False),
-    sa.Column('register', sa.Enum('neutral', 'formal', 'informal', 'archaic', 'vulgar', 'liturgical', 'poetic', name='register'), nullable=False),
     sa.Column('meaning', sa.Text(), nullable=False),
-    sa.Column('literal', sa.Text(), nullable=True),
-    sa.Column('example', sa.Text(), nullable=True),
-    sa.Column('example_translation', sa.Text(), nullable=True),
-    sa.Column('is_fixed', sa.Boolean(), nullable=False),
     sa.Column('notes', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
@@ -137,32 +143,46 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('idioms', schema=None) as batch_op:
-        batch_op.create_index('ix_idioms_phrase', ['language_id', 'phrase'], unique=False)
+        batch_op.create_index('ix_idioms_language_phrase', ['language_id', 'phrase'], unique=False)
 
+    op.create_table('lexemes',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('language_id', sa.Integer(), nullable=False),
+    sa.Column('paradigm_id', sa.Integer(), nullable=True),
+    sa.Column('lemma', sa.String(length=255), nullable=False),
+    sa.Column('gloss', sa.Text(), nullable=True),
+    sa.Column('part_of_speech', sa.String(length=80), nullable=True),
+    sa.Column('notes', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['paradigm_id'], ['inflection_paradigms.id'], ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('phonology_rules',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('dialect_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=200), nullable=False),
-    sa.Column('rule_type', sa.Enum('assimilation', 'dissimilation', 'elision', 'insertion', 'sandhi', 'metathesis', 'tone', 'other', name='phonologyruletype'), nullable=False),
-    sa.Column('rule_order', sa.Integer(), nullable=False),
-    sa.Column('input_ipa', sa.String(length=120), nullable=False),
-    sa.Column('output_ipa', sa.String(length=120), nullable=False),
-    sa.Column('environment', sa.String(length=255), nullable=True),
-    sa.Column('formal_notation', sa.Text(), nullable=True),
-    sa.Column('scope', sa.Enum('word_internal', 'morpheme_boundary', 'word_boundary', 'phrase', 'clause', name='rulescope'), nullable=True),
-    sa.Column('is_feeding', sa.Boolean(), nullable=True),
-    sa.Column('is_bleeding', sa.Boolean(), nullable=True),
-    sa.Column('example', sa.Text(), nullable=True),
-    sa.Column('notes', sa.Text(), nullable=True),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['dialect_id'], ['dialects.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('phonology_rules', schema=None) as batch_op:
-        batch_op.create_index('ix_phonology_rules_dialect_order', ['dialect_id', 'rule_order'], unique=False)
-
+    op.create_table('sample_texts',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('language_id', sa.Integer(), nullable=False),
+    sa.Column('dialect_id', sa.Integer(), nullable=False),
+    sa.Column('title', sa.String(length=255), nullable=False),
+    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('is_regression_test', sa.Boolean(), nullable=False),
+    sa.Column('notes', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['dialect_id'], ['dialects.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('scripts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('language_id', sa.Integer(), nullable=False),
@@ -178,15 +198,12 @@ def upgrade():
     sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('translation_memory',
+    op.create_table('translation_memories',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('language_id', sa.Integer(), nullable=False),
     sa.Column('dialect_id', sa.Integer(), nullable=True),
     sa.Column('source_text', sa.Text(), nullable=False),
-    sa.Column('source_language_id', sa.Integer(), nullable=True),
-    sa.Column('source_lang_name', sa.String(length=120), nullable=True),
     sa.Column('target_text', sa.Text(), nullable=False),
-    sa.Column('target_script', sa.Text(), nullable=True),
     sa.Column('source', sa.Enum('manual', 'translator', 'imported', name='translationsource'), nullable=False),
     sa.Column('status', sa.Enum('approved', 'draft', 'rejected', name='translationstatus'), nullable=False),
     sa.Column('confidence', sa.Float(), nullable=True),
@@ -195,107 +212,59 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['dialect_id'], ['dialects.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['source_language_id'], ['languages.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('translation_memory', schema=None) as batch_op:
+    with op.batch_alter_table('translation_memories', schema=None) as batch_op:
         batch_op.create_index('ix_tm_dialect_status', ['dialect_id', 'status'], unique=False)
         batch_op.create_index('ix_tm_language_status', ['language_id', 'status'], unique=False)
 
-    op.create_table('words',
+    op.create_table('glyphs',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('language_id', sa.Integer(), nullable=False),
+    sa.Column('script_id', sa.Integer(), nullable=False),
+    sa.Column('symbol', sa.String(length=40), nullable=False),
+    sa.Column('meaning', sa.String(length=255), nullable=True),
+    sa.Column('unicode_value', sa.String(length=10), nullable=True),
+    sa.ForeignKeyConstraint(['script_id'], ['scripts.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('script_id', 'symbol', name='uq_glyph_symbol')
+    )
+    op.create_table('senses',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('lexeme_id', sa.Integer(), nullable=False),
+    sa.Column('definition', sa.Text(), nullable=False),
+    sa.Column('notes', sa.Text(), nullable=True),
+    sa.ForeignKeyConstraint(['lexeme_id'], ['lexemes.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('word_forms',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('lexeme_id', sa.Integer(), nullable=False),
     sa.Column('dialect_id', sa.Integer(), nullable=True),
-    sa.Column('lemma', sa.String(length=255), nullable=False),
-    sa.Column('romanization', sa.String(length=255), nullable=True),
-    sa.Column('script_code', sa.String(length=40), nullable=True),
-    sa.Column('pos', sa.Enum('noun', 'verb', 'adjective', 'adverb', 'pronoun', 'numeral', 'particle', 'conjunction', 'adposition', 'interjection', 'root', 'other', name='partofspeech'), nullable=False),
-    sa.Column('pos_subtype', sa.String(length=80), nullable=True),
-    sa.Column('register', sa.Enum('neutral', 'formal', 'informal', 'archaic', 'vulgar', 'liturgical', 'poetic', name='register'), nullable=False),
+    sa.Column('written_form', sa.String(length=255), nullable=False),
     sa.Column('notes', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['dialect_id'], ['dialects.id'], ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['language_id'], ['languages.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['lexeme_id'], ['lexemes.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('glyphs',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('script_id', sa.Integer(), nullable=False),
-    sa.Column('script_code', sa.String(length=40), nullable=False),
-    sa.Column('unicode_codepoint', sa.String(length=10), nullable=True),
-    sa.Column('category', sa.Enum('letter', 'vowel_mark', 'punctuation', 'numeral', 'ligature', 'other', name='glyphcategory'), nullable=True),
-    sa.Column('romanization', sa.String(length=40), nullable=True),
-    sa.Column('ipa_value', sa.String(length=40), nullable=True),
-    sa.Column('name', sa.String(length=120), nullable=True),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('glyph_order', sa.Integer(), nullable=True),
-    sa.Column('contextual_notes', sa.Text(), nullable=True),
-    sa.ForeignKeyConstraint(['script_id'], ['scripts.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('script_id', 'script_code', name='uq_glyph_code')
-    )
-    op.create_table('inflected_forms',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('word_id', sa.Integer(), nullable=False),
-    sa.Column('paradigm_id', sa.Integer(), nullable=False),
-    sa.Column('dialect_id', sa.Integer(), nullable=True),
-    sa.Column('form_label', sa.String(length=80), nullable=False),
-    sa.Column('form', sa.String(length=255), nullable=False),
-    sa.Column('script_code', sa.String(length=40), nullable=True),
-    sa.Column('ipa', sa.String(length=255), nullable=True),
-    sa.ForeignKeyConstraint(['dialect_id'], ['dialects.id'], ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['paradigm_id'], ['inflection_paradigms.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['word_id'], ['words.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('word_id', 'paradigm_id', 'form_label', 'dialect_id', name='uq_inflected_form')
-    )
-    op.create_table('pronunciations',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('word_id', sa.Integer(), nullable=False),
-    sa.Column('dialect_id', sa.Integer(), nullable=False),
-    sa.Column('ipa', sa.String(length=255), nullable=False),
-    sa.Column('romanization', sa.String(length=255), nullable=True),
-    sa.Column('audio_url', sa.String(length=512), nullable=True),
-    sa.Column('notes', sa.Text(), nullable=True),
-    sa.ForeignKeyConstraint(['dialect_id'], ['dialects.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['word_id'], ['words.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('word_id', 'dialect_id', name='uq_pronunciation')
-    )
-    op.create_table('senses',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('word_id', sa.Integer(), nullable=False),
-    sa.Column('sense_order', sa.Integer(), nullable=False),
-    sa.Column('definition', sa.Text(), nullable=False),
-    sa.Column('example_sentence', sa.Text(), nullable=True),
-    sa.Column('example_translation', sa.Text(), nullable=True),
-    sa.Column('notes', sa.Text(), nullable=True),
-    sa.ForeignKeyConstraint(['word_id'], ['words.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('word_paradigms',
-    sa.Column('word_id', sa.Integer(), nullable=False),
-    sa.Column('paradigm_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['paradigm_id'], ['inflection_paradigms.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['word_id'], ['words.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('word_id', 'paradigm_id')
     )
     op.create_table('idiom_words',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('idiom_id', sa.Integer(), nullable=False),
-    sa.Column('word_id', sa.Integer(), nullable=True),
-    sa.Column('position', sa.Integer(), nullable=False),
-    sa.Column('component_role', sa.String(length=80), nullable=True),
-    sa.Column('inflected_form_id', sa.Integer(), nullable=True),
-    sa.Column('surface_form', sa.String(length=255), nullable=True),
+    sa.Column('word_form_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['idiom_id'], ['idioms.id'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['inflected_form_id'], ['inflected_forms.id'], ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['word_id'], ['words.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('idiom_id', 'position', name='uq_idiom_position')
+    sa.ForeignKeyConstraint(['word_form_id'], ['word_forms.id'], ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('sense_fields',
+    op.create_table('pronunciations',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('word_form_id', sa.Integer(), nullable=False),
+    sa.Column('ipa', sa.String(length=255), nullable=False),
+    sa.Column('notes', sa.Text(), nullable=True),
+    sa.ForeignKeyConstraint(['word_form_id'], ['word_forms.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('sense_semantic_fields',
     sa.Column('sense_id', sa.Integer(), nullable=False),
     sa.Column('semantic_field_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['semantic_field_id'], ['semantic_fields.id'], ondelete='CASCADE'),
@@ -307,35 +276,34 @@ def upgrade():
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_table('sense_fields')
-    op.drop_table('idiom_words')
-    op.drop_table('word_paradigms')
-    op.drop_table('senses')
+    op.drop_table('sense_semantic_fields')
     op.drop_table('pronunciations')
-    op.drop_table('inflected_forms')
+    op.drop_table('idiom_words')
+    op.drop_table('word_forms')
+    op.drop_table('senses')
     op.drop_table('glyphs')
-    op.drop_table('words')
-    with op.batch_alter_table('translation_memory', schema=None) as batch_op:
+    with op.batch_alter_table('translation_memories', schema=None) as batch_op:
         batch_op.drop_index('ix_tm_language_status')
         batch_op.drop_index('ix_tm_dialect_status')
 
-    op.drop_table('translation_memory')
+    op.drop_table('translation_memories')
     op.drop_table('scripts')
-    with op.batch_alter_table('phonology_rules', schema=None) as batch_op:
-        batch_op.drop_index('ix_phonology_rules_dialect_order')
-
+    op.drop_table('sample_texts')
     op.drop_table('phonology_rules')
+    op.drop_table('lexemes')
     with op.batch_alter_table('idioms', schema=None) as batch_op:
-        batch_op.drop_index('ix_idioms_phrase')
+        batch_op.drop_index('ix_idioms_language_phrase')
 
     op.drop_table('idioms')
-    with op.batch_alter_table('grammar_rules', schema=None) as batch_op:
-        batch_op.drop_index('ix_grammar_rules_lang_type_order')
-
     op.drop_table('grammar_rules')
+    with op.batch_alter_table('etymology_events', schema=None) as batch_op:
+        batch_op.drop_index('ix_etymology_events_lang_sort')
+
+    op.drop_table('etymology_events')
     op.drop_table('morphemes')
     op.drop_table('language_relationships')
     op.drop_table('inflection_paradigms')
+    op.drop_table('etymology_articles')
     op.drop_table('dialects')
     op.drop_table('semantic_fields')
     op.drop_table('languages')
