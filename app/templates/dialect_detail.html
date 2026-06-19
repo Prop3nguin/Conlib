@@ -23,11 +23,66 @@ Oxblood : rgb(58, 16, 24)
 
 {% block content %}
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-{% if dialect.name != 'Root' and dialect.parent.name is not none %}
+{% if dialect.parent.name %}
 <h1 class="PageTitle">{{ dialect.parent.name }} / {{ dialect.name }}</h1>
 {% else %}
-<h1 class="PageTitle">{{ language.name }} / {{ dialect.name }}</h1>
+<h1 class="PageTitle">{{ dialect.name }} {{ language.name }}</h1>
 {% endif %}
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-<a href="{{ url_for( 'languages.delete_dialect', dialect_id=dialect.id) }}">Delete Dialect</a>
+<h3 class="TabTitle">Edit Actions</h3>
+<section>
+    <ul class="Edit">
+        <li>Edit Description</li>
+        <li>Add Script</li>
+        <li>Add Lexeme</li>
+        <li>Add Etymology Article / Event</li>
+        <li>Add Idiom / Sample Text</li>
+        <li>
+            <a href="{{ url_for( 'languages.delete_dialect', dialect_id=dialect.id) }}">Delete Dialect</a>
+        </li>
+    </ul>
+</section>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<ul class="MapNDisc">
+    <div class="Description">
+        <h3 class="InstanceTitle">Description</h3>
+        <p>{{dialect.description}}</p>
+    </div>
+</ul>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h3 class="TabTitle">Dialect Overview</h3>
+<section>
+    <ul class="Columns">
+        <li>
+            <h3 class="InstanceTitle">Articles</h3>
+        </li>
+        <li>
+            <h3 class="InstanceTitle">Sample Texts</h3>
+        </li>
+        <li>
+            <h3 class="InstanceTitle">Relationships</h3>
+            {% if dialect.parent.name %}
+                <p class="Entry">Parent: {{ dialect.parent.name }}</p>
+            {% else %}
+                <p class="Entry">Parent: {{ dialect.language.name }}</p>
+            {% endif %}
+            {% if dialect.children %}
+                {% for child in dialect.children %}
+                    <p class="Entry">Child : {{ child.name }}</p>
+                {% endfor %}
+            {% else %}
+                <p class="Entry">Children : None</p>
+            {% endif %}
+            {% if dialect.region %}
+                <p class="Entry">Region : {{ dialect.region }}</p>
+            {% endif %}
+        </li>
+    </ul>
+</section>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h3 class="TabTitle">Lexicon ({{ dialect.name }} {{ language.name }})</h3>
+<section>
+    
+</section>
+
 {% endblock %}

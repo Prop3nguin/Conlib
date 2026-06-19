@@ -40,26 +40,25 @@ Oxblood : rgb(58, 16, 24)
 <h1 class="PageTitle">Conlang Library</h1>
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <h3 class="TabTitle">Languages, Dialects and Articles</h3>
-    <section>   
-        <ul>
-            {% for language in languages %}
-            <h2 class="InstanceTitle"><a href="{{ url_for( 'languages.language_detail', language_id=language.id ) }}">{{ language.name }}</a> - <a href="{{ url_for( 'languages.delete_language', language_id=language.id) }}">Delete</a></h2>
-            <ul class="Columns">
-                <li>
-                    <h3 class="InstanceTitle">Dialects:</h3>
-                    {% for dialect in language.dialects %}
-                    <a href="{{ url_for( 'languages.dialect_detail', dialect_id=dialect.id, language_id=language.id ) }}">{{ dialect.name }}</a>
-                    {% endfor %}
-                </li>
-                <li>    
-                    <h3 class="InstanceTitle">Articles:</h3>
-                    {% for Article in Articles %}
-                    <a href="#">{{ Article.name }}</a>
-                    {% endfor %}
-                </li>
-            </ul>
-            <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-            {% endfor %}
+<section>   
+    <ul>
+        {% for language in languages %}
+        <h2 class="InstanceTitle"><a href="{{ url_for( 'languages.language_detail', language_id=language.id ) }}">{{ language.name }}</a></h2>
+        <ul class="Columns">
+            <li>
+                <h3 class="InstanceTitle">Dialects:</h3>
+                {% for dialect in language.dialects %}
+                <a href="{{ url_for( 'languages.dialect_detail', dialect_id=dialect.id, language_id=language.id ) }}">{{ dialect.name }}</a>
+                {% endfor %}
+            </li>
+            <li>    
+                <h3 class="InstanceTitle">Articles:</h3>
+                {% for Article in Articles %}
+                <a href="#">{{ Article.name }}</a>
+                {% endfor %}
+            </li>
         </ul>
-    </section>
+        {% endfor %}
+    </ul>
+</section>
 {% endblock %}

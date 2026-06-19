@@ -46,6 +46,19 @@ Oxblood : rgb(58, 16, 24)
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <h1 class="PageTitle">{{ language.name }}</h1>
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h3 class="TabTitle">Edit Actions</h3>
+<section>
+    <ul class="Edit">
+        <li>Edit Description</li>
+        <li>Add Script</li>
+        <li>Add Lexeme</li>
+        <li>Add Etymology Article / Event</li>
+        <li>Add Idiom / Sample Text</li>
+        <li>
+            <a href="{{ url_for( 'languages.delete_language', language_id=language.id) }}">Delete Language</a>
+        </li>
+    </ul>
+</section>
 <ul class="MapNDisc">
     <div class="card">
         <h3 class="InstanceTitle">Dialect Structure</h3>
@@ -94,6 +107,11 @@ Oxblood : rgb(58, 16, 24)
 
         </li>
     </ul>
+</section>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h3 class="TabTitle">{{ language.name }} Lexicon</h3>
+<section>
+    
 </section>
 
 {% endblock %}

@@ -18,51 +18,7 @@ Dark crimson : rgb(92, 24, 34)
 
 Oxblood : rgb(58, 16, 24) 
 */
-        form {
-            background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood)) ;
-            border-radius: 15px;
-            margin: 10px;
-        }
-        form ul {
-            width: 100%;
-            display: flex;
-            list-style: none;
-            justify-content: center;
-        }
-        form ul li {
-            background-color: var(--Oxblood);
-            border-radius: 5px;
-            padding: 20px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            margin-left: 10px;
-            margin-right: 10px;
-        }
-        label {
-            font-family: 'Uncial Antiqua';
-            display: inline-block;
-            width: 100px;
-            white-space: nowrap;
-            margin-right:100px;
-        }
-        input, select, option {
-            padding: 5px;
-            border-radius: 5px;
-            font-family: 'Amita';
-            margin-bottom: 10px;
-            background-color: var(--PrimaryBackgroundColor);
-        }
-        textarea {
-            background-color: var(--PrimaryBackgroundColor);
-            z-index: -2;
-        }
-        .submit {
-            width: 90%;
-        }
-        .button {
-            margin: 0;
-            padding: 0;
-        }
+        
 </style>
 {% endblock %}
 
@@ -111,11 +67,9 @@ Oxblood : rgb(58, 16, 24)
             </li>
         </ul>
         <ul class="button">
-            <li>
-                <button type="submit" class="submit">
-                    Add Dialect
-                </button>
-            </li>
+            <button type="submit" class="submit">
+                Add Dialect
+            </button>
         </ul>
     </form>
 {% endblock %}

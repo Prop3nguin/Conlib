@@ -32,8 +32,19 @@ def languages_home():
 
 @languages_bp.route('/<int:language_id>', methods=['GET', 'POST'])
 def language_detail(language_id):
+
     language = Language.query.get_or_404(language_id)
-    return render_template('language_detail.html', language=language)
+
+    root_dialects = [
+        d for d in language.dialects
+        if d.parent_dialect_id is None
+    ]
+
+    context = {
+        "language" : language,
+        "root_dialects" : root_dialects
+    }
+    return render_template('language_detail.html', **context)
 
 @languages_bp.route('/add', methods=['GET', 'POST'])
 def add_language():
@@ -61,14 +72,8 @@ def add_language():
 @languages_bp.route('/delete/<int:language_id>', methods=["GET", "POST"])
 def delete_language(language_id):
 
-    root_dialects = [
-        d for d in language.dialects
-        if d.parent_dialect_id is None
-    ]
-
     context = {
-        "language" : Language.query.get_or_404(language_id),
-        "root_dialects" : root_dialects
+        "language" : Language.query.get_or_404(language_id)
     }
 
     if request.method == "POST":
