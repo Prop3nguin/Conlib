@@ -26,12 +26,14 @@ Oxblood : rgb(58, 16, 24)
 {% endblock %}
 
 {% block content %}
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <h1 class="PageTitle">Database Structure</h1>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <section>
     <h2>Languages</h2>
     <ul>
         {% for language in languages %}
-        <li>{{ language.name }} ({{ language.family }})</li>
+        <li>{{ language.name }}</li>
         {% endfor %}
     </ul>
 
@@ -39,20 +41,6 @@ Oxblood : rgb(58, 16, 24)
     <ul>
         {% for dialect in dialects %}
         <li>{{ dialect.name }} ({{ dialect.language.name }})</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Scripts</h2>
-    <ul>
-        {% for script in scripts %}
-        <li>{{ script.name }}</li>
-        {% endfor %}
-    </ul>
-
-    <h2>Glyphs</h2>
-    <ul>
-        {% for glyph in glyphs %}
-        <li>{{ glyph.character }} ({{ glyph.script.name }})</li>
         {% endfor %}
     </ul>
 </section>

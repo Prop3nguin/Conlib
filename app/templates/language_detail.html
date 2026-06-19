@@ -18,72 +18,82 @@ Dark crimson : rgb(92, 24, 34)
 
 Oxblood : rgb(58, 16, 24) 
 */
-        .PageTitle {
-            font-family: 'Amita';
-            font-weight: bold;
-            text-align: center;
-            padding: 40px;
-            margin: 40px;
-            border-radius: 10px;
-            background-color: rgb(30, 30, 30);
-        }
-        .InstanceTitle {
-            font-family: 'Amita';
-            font-weight: bold;
-            text-align: center;
-            padding: 40px;
-            border-radius: 10px;
-            background-color: rgb(30, 30, 30);
-        }
-        .Columns {
-            width:100%;
-            display:flex;
-            list-style: none;
-            background-color: rgb(30, 30, 30);
-            border-radius: 15px;
-        }
-        .Columns li {
-            position: relative;
-            text-align: center;
-            width: 100%;
-            min-height: 500px;  
-            padding: 3%;
-            padding-top: 10px;
-            border-radius: 15px;
-            background-color: #333;
-            margin: 4px 2px;
-        }
-        .Description {
-            justify-self: center;
-            max-width: 85%;
-            min-height: 250px;
-            margin: 20px;
-            padding: 30px;
-            background-color: rgb(30, 30, 30);
-            border-radius: 10px;
-            line-height: 50px;
-            text-indent: 50px;
-        }
     </style>
 {% endblock %}
 
+{% macro render_dialects(dialect_list, language_id) %}
+    <ul>
+        {% for dialect in dialect_list %}
+            <li>
+                {% if dialect.children %}
+                    <strong>
+                        <a href="{{ url_for('languages.dialect_detail', dialect_id=dialect.id, language_id=language_id) }}">
+                            {{ dialect.name }}
+                        </a>
+                    </strong>
+                    {{ render_dialects(dialect.children, language_id) }}
+                {% else %}
+                    <a href="{{ url_for('languages.dialect_detail', dialect_id=dialect.id, language_id=language_id) }}">
+                        {{ dialect.name }}
+                    </a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
 {% block content %}
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <h1 class="PageTitle">{{ language.name }}</h1>
-<div class="Description">{{ language.description }}</div>
-<ul class="Links">
-    <li><a >Lexicon</a></li>
-    <li><a >Translator</a></li>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<ul class="MapNDisc">
+    <div class="card">
+        <h3 class="InstanceTitle">Dialect Structure</h3>
+        <ul class="Structure">
+            <li>
+                <strong>{{ language.name }}</strong>
+                <ul>
+                    {% for dialect in root_dialects %}
+                        <li>
+                            {% if dialect.children %}
+                                <strong>
+                                    <a href="{{ url_for('languages.dialect_detail', dialect_id=dialect.id, language_id=language.id) }}">
+                                        {{ dialect.name }}
+                                    </a>
+                                </strong>
+                                {{ render_dialects(dialect.children, language.id) }}
+                            {% else %}
+                                <a href="{{ url_for('languages.dialect_detail', dialect_id=dialect.id, language_id=language.id) }}">
+                                    {{ dialect.name }}
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+        <ul class="AddDelete">
+            <li><a href="{{ url_for( 'languages.add_dialect', language_id=language.id) }}">Add</a></li>
+        </ul>
+    </div>
+    <div class="Description">
+        <h3 class="InstanceTitle">Description</h3>
+        <p>{{ language.description }}</p>
+    </div>
 </ul>
-<ul class="Columns">
-    <li>
-        <h3 class="InstanceTitle">Related Articles :</h3>
-    </li>
-    <li>
-        <h3 class="InstanceTitle">Sample Texts :</h3>
-    </li>
-    <li>
-        <h3 class="InstanceTitle">Samples Translated :</h3>
-    </li>
-</ul>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h3 class="TabTitle">Articles & Rosseta Stones</h3>
+<section>
+    <ul class="Columns">
+        <li>
+            <h3 class="InstanceTitle">Related Articles :</h3>
+
+        </li>
+        <li>
+            <h3 class="InstanceTitle">Sample Texts :</h3>
+
+        </li>
+    </ul>
+</section>
 
 {% endblock %}

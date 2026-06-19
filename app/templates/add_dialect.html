@@ -68,44 +68,54 @@ Oxblood : rgb(58, 16, 24)
 
 {% block content %}
     <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-    <h1 class="PageTitle">Add Language</h1>
+    <h1 class="PageTitle">Add Dialect</h1>
     <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-    <h3 class="TabTitle">Required Language Information</h3>
-    <form method="POST" action="{{ url_for('languages.add_language') }}">
+    <h3 class="TabTitle">Required Dialect Information</h3>
+    <form method="POST" action="{{ url_for('languages.add_dialect', language_id=language.id) }}">
         <ul>
             <li>
                 <label for="name">Name:</label>
-                <input type="text" id="name" name="name" placeholder="English, Español etc." required>
+                <input type="text" id="name" name="name" placeholder="UK English" required>
                 <br>
-                <label for="status">Status:</label>
-                <select name="status" required>
-                    <option value="living">Living</option>
-                    <option value="extinct">Extinct</option>
-                    <option value="liturgical">Liturgical</option>
-                    <option value="constructed">Constructed</option>
+                <label for="parent_dialect_id">Parent:</label>
+                <select id="parent_dialect_id" name="parent_dialect_id">
+                    <option value="" >{{ language.name }}</option>
+                    {% for dialect in language.dialects %}
+                    <option value="{{ dialect.id }}">{{ dialect.name }}</option>
+                    {% endfor %}
                 </select>
                 <br>
                 <p class="disclaimer">Not Required --</p>
                 <br>
-                <label for="WordOrder">Word Order:</label>
-                <select name="WordOrder">
-                    <option value="SOV">Subject-Object-Verb</option>
-                    <option value="SVO">Subject-Verb-Object</option>
-                    <option value="VSO">Verb-Subject-Object</option>
-                    <option value="VOS">Verb-Object-Subject</option>
-                    <option value="OVS">Object-Verb-Subject</option>
-                    <option value="OSV">Object-Subject-Verb</option>
-                    <option value="free">Free</option>
+                <label for="geo_tag">Dialect Type:</label>
+                <select id="geo_tag" name="geo_tag">
+                    <option value="regional">Regional</option>
+                    <option value="class_based">Class Based</option>
+                    <option value="archaic">Archaic</option>
+                    <option value="pidgin">Pidgin</option>
+                    <option value="creole">Creole</option>
+                    <option value="liturgical">Liturgical</option>
+                    <option value="informal">Informal</option>
+                    <option value="other">Other</option>
                 </select>
                 <br>
+                <label for="region">Region:</label>
+                <input type="text" id="region" name="region" placeholder="Brazil, United Kingdom">
             </li>
+                
             <li>
                 <label for="description">Description:</label>
                 <br>
-                <textarea id="description" name="description" rows="12" cols="60" placeholder="Write details about what the Language is supposed to acomplish, weather it be for fun, for a narrative, or for more efficient use by yourself (like a shorthand)"></textarea>
+                <textarea id="description" name="description" rows="12" cols="60" placeholder="Write Details about why this dialect came into existance, what purpose does it serve Narratively? What do people in certain areas think about those that speak this dialect?"></textarea>
                 <br>
             </li>
         </ul>
-        <ul class="Button"><button type="submit" class="submit">Add Language</button></ul>
+        <ul class="button">
+            <li>
+                <button type="submit" class="submit">
+                    Add Dialect
+                </button>
+            </li>
+        </ul>
     </form>
 {% endblock %}

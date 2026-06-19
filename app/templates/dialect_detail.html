@@ -22,5 +22,12 @@ Oxblood : rgb(58, 16, 24)
 {% endblock %}
 
 {% block content %}
-<p>Why no styleS?</p>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+{% if dialect.name != 'Root' and dialect.parent.name is not none %}
+<h1 class="PageTitle">{{ dialect.parent.name }} / {{ dialect.name }}</h1>
+{% else %}
+<h1 class="PageTitle">{{ language.name }} / {{ dialect.name }}</h1>
+{% endif %}
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<a href="{{ url_for( 'languages.delete_dialect', dialect_id=dialect.id) }}">Delete Dialect</a>
 {% endblock %}

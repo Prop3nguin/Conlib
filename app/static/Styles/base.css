@@ -21,7 +21,8 @@ Oxblood : rgb(58, 16, 24)
     --Oxblood: rgb(58, 16, 24);
     --LightTextColor: rgb(240, 236, 224);
     --DarkTextColor: rgb(45, 37, 26);
-    --FaintTextColor: rgb(240, 236, 224, 0.3);
+    --FaintTextColor: rgba(240, 236, 224, 0.3);
+    --Shadow: rgba(0, 8, 26, 0.3);
 }
 
 * {
@@ -30,12 +31,34 @@ Oxblood : rgb(58, 16, 24)
     color: var(--LightTextColor);
 }
 body {
+    padding-top: 75px; /* for Navbar */
     font-family: 'uncial antiqua';
     font-weight: 400;
     font-style: normal;
     background-color: var(--PrimaryBackgroundColor);
+    background-image:
+        radial-gradient(
+            rgba(68, 37, 139, 0.3) 1px,
+            transparent 1px
+        );
+    background-size: 12px 12px;
+}
+body::before {
+    content: "◈𐌰𐌲𐌳𐌸𐌹◈";
+    position: fixed;
+    z-index: -1;
+    font-size: 17rem;
+    opacity: .03;
+    pointer-events: none;
+    line-break: none;
 }
 nav {
+    top: 0;
+    align-self: top;
+    z-index: 3;
+    position: fixed;
+    position: top;
+    width: 100%;
     font-family: 'Amita';
     background-color: var(--DarkCrimson);
     overflow: hidden;
@@ -51,18 +74,29 @@ nav ul li {
 a {
     text-decoration: none;
     color: var(--GoldAccentColor);
+    text-shadow: 5px 2px 5px var(--Shadow);
+    transition: all 0.3s ease-in;
+}
+a:hover {
     text-shadow: 5px 2px 5px black;
+}
+nav a {
+    padding: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: var(--Shadow);
+    border-radius: 15px;
 }
 textarea {
     padding: 5px;
     border-radius: 5px;
     font-family: 'Amita';
-    background-color: var(--PrimaryBackroundColor);
+    background-color: var(--PrimaryBackgroundColor);
 }
 button {
     font-family: 'Amita';
     border-radius: 5px;
-    background-color: var(--PrimaryBackroundColor);
+    background-color: var(--PrimaryBackgroundColor);
     box-shadow: 3px 3px 10px black;
     padding: 20px;
     margin: 40px;
@@ -71,7 +105,7 @@ button {
 }
 button:hover {
     font-family: 'Amita';
-    background-color: var(--PrimaryBackroundColor);
+    background-color: var(--PrimaryBackgroundColor);
     box-shadow: 8px 8px 10px black;
     margin: 40px;
     transform: translateY(-5px);
@@ -79,10 +113,158 @@ button:hover {
 .navSymbol {
     margin-left: 15%;
     margin-right: 15%;
+    color: var(--GoldAccentColor);
+    opacity: 0.6;
 }
 .divider{
     color: var(--GoldAccentColor);
     opacity: 0.6;
     text-align: center;
     margin:50px;
+}
+
+/* 
+other classes for basic themes and positioning website-wide
+
+ - PageTitle
+ - SoftTitle
+ - InstanceTitle
+ - Section
+ - Card
+ - Section Card
+ - Disclaimer
+
+*/
+
+.PageTitle {
+    text-align: center;
+    letter-spacing: 20px;
+    font-size: 350%;
+    margin: 50px;
+    padding: 50px;
+}
+.disclaimer {
+    color: var(--FaintTextColor);
+    margin-top: 20px;
+    text-indent: 20px;
+}
+section {
+    text-align: center;
+    min-height: 100px;
+    padding: 10px;
+    margin: 40px;
+    margin-top: 0;
+    border-radius: 5px;
+    background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood));
+}
+.TabTitle{
+    font-family: 'Amita';
+    justify-self: center;
+    padding: 40px;
+    background-color: var(--DarkCrimson);
+    transform: translateY(10px);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+.TabTitle::before {
+    content: '◈';
+    position: relative;
+    right: 20px;
+    color: var(--GoldAccentColor);
+}
+.TabTitle::after {
+    content: '◈';
+    position: relative;
+    left: 20px;
+    color: var(--GoldAccentColor);
+}
+.Columns {
+    width:100%;
+    display:flex;
+    list-style: none;
+}
+.Columns li {
+    position: relative;
+    text-align: center;
+    width: 100%;
+    min-height: 200px;  
+    padding: 3%;
+    padding-top: 10px;
+    border-radius: 15px;
+    margin: 4px 2px;
+}
+.Columns li a {
+    line-height: 80px;
+    padding: 20px;
+    background-color: var(--Oxblood);
+    border-radius: 15px;
+    box-shadow: 5px 5px 5px var(--Shadow);
+}
+.Structure {
+    text-align: center;
+    background-color: var(--Oxblood);
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 15px;
+}
+.Structure ul {
+    list-style: none;
+    padding-left: 20px;
+}
+.Structure li {
+    list-style: none;
+    margin: 5px 0;
+    position: relative;
+}
+.Structure li::before {
+    content: '└ ';
+}
+.card {
+    border-radius: 15px;
+    padding: 20px;
+    background-color: var(--DarkCrimson);
+    justify-self: center;
+    width: 16.5%;
+}
+.MapNDisc {
+    justify-content: center;
+    list-style-type: none;
+    display: flex;
+}
+.Description {
+    min-width: 50%;
+    max-width: 85%;
+    min-height: 250px;
+    margin: 20px;
+    padding: 30px;
+    background-color: var(--DarkCrimson);
+    border-radius: 10px;
+    line-height: 50px;
+}
+.Description p {
+    text-indent: 50px;
+    background-color: var(--Oxblood);
+    border-radius: 15px;
+    min-height: 45%;
+    margin: 10px;
+}
+.AddDelete {
+    list-style-type: none;
+    display: flex;
+    justify-content: space-evenly;
+}
+.AddDelete li {
+    background-color: var(--Oxblood);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px;
+    margin-bottom: none;
+}
+.InstanceTitle {
+    font-family: 'Amita';
+    font-weight: bold;
+    text-align: center;
+    padding: 40px;
+    border-radius: 10px;
+    background-color: var(--Oxblood);
 }

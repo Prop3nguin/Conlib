@@ -30,36 +30,36 @@ Oxblood : rgb(58, 16, 24)
         margin: 2rem 0;
         opacity: .6;
         }
-        .language-page::before {
-        content: "𐌰𐌱𐌲𐌰𐌱𐌲𐌰𐌱𐌲";
-        position: fixed;
-        font-size: 20rem;
-        opacity: .03;
-        pointer-events: none;
-        }
-        h1 {
-            text-align: center;
-            margin: 50px;
-            padding: 50px;
-        }
     </style>
-    
+
 {% endblock %}
 
 {% block content %}
-<div class="language-page">
-    <h1>Constructed Library (ConLib)</h1>
-        <div class="divider">✦ ◈ ✦</div>
+
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h1 class="PageTitle">Conlang Library</h1>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h3 class="TabTitle">Languages, Dialects and Articles</h3>
+    <section>   
         <ul>
             {% for language in languages %}
-            <li class="InstanceTitle"><a href="/{{ language.id }}">{{ language.name }}</a> - <a href="/delete/{{ language.id }}">Delete</a></li>
-            <li>|-- Dialects: 
-                {% for dialect in language.dialects %}
-                <li>> > >|-- <a href="/{{ language.id }}/dialects/{{ dialect.id }}">{{ dialect.name }}</a></li>
-                {% endfor %}
-            </li>
-            <li>|-- Articles: {{ language.articles|length }}</li>
+            <h2 class="InstanceTitle"><a href="{{ url_for( 'languages.language_detail', language_id=language.id ) }}">{{ language.name }}</a> - <a href="{{ url_for( 'languages.delete_language', language_id=language.id) }}">Delete</a></h2>
+            <ul class="Columns">
+                <li>
+                    <h3 class="InstanceTitle">Dialects:</h3>
+                    {% for dialect in language.dialects %}
+                    <a href="{{ url_for( 'languages.dialect_detail', dialect_id=dialect.id, language_id=language.id ) }}">{{ dialect.name }}</a>
+                    {% endfor %}
+                </li>
+                <li>    
+                    <h3 class="InstanceTitle">Articles:</h3>
+                    {% for Article in Articles %}
+                    <a href="#">{{ Article.name }}</a>
+                    {% endfor %}
+                </li>
+            </ul>
+            <div class="divider">✦ ───────── ◈ ───────── ✦</div>
             {% endfor %}
         </ul>
-</div>
+    </section>
 {% endblock %}

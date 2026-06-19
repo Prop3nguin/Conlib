@@ -52,19 +52,6 @@ def add_language():
             )
 
         db.session.add(language)
-        db.session.flush()
-
-        root_dialect = Dialect(
-            language_id=language.id,
-            name="Root",
-            description="Default dialect"
-        )
-
-        db.session.add(root_dialect)
-        db.session.flush()
-
-        language.default_dialect_id = root_dialect.id
-
         db.session.commit()
 
         return redirect(url_for('languages.languages_home'))
@@ -74,9 +61,16 @@ def add_language():
 @languages_bp.route('/delete/<int:language_id>', methods=["GET", "POST"])
 def delete_language(language_id):
 
+    root_dialects = [
+        d for d in language.dialects
+        if d.parent_dialect_id is None
+    ]
+
     context = {
-        "language" : Language.query.get_or_404(language_id)
+        "language" : Language.query.get_or_404(language_id),
+        "root_dialects" : root_dialects
     }
+
     if request.method == "POST":
         language = Language.query.get_or_404(language_id)
         try:
@@ -87,11 +81,6 @@ def delete_language(language_id):
             return 'There was a problem deleting that Language'
     
     else :
-
-        context = {
-            "language" : Language.query.get_or_404(language_id)
-        }
-
         return render_template('delete_lang_confirm.html', **context)
 
 
@@ -100,7 +89,7 @@ def delete_language(language_id):
 # ------------------------------------------------------------------------------------------------------------
 
 @languages_bp.route('/<int:language_id>/dialects/<int:dialect_id>', methods=['GET', 'POST'])
-def dialects(dialect_id, language_id):
+def dialect_detail(dialect_id, language_id):
     # View specific page for a single dialect of a language
     context = {
         "language": Language.query.get_or_404(language_id),
@@ -108,6 +97,72 @@ def dialects(dialect_id, language_id):
     }
 
     return render_template('dialect_detail.html', **context)
+
+
+@languages_bp.route('/delete/dialects/<int:dialect_id>', methods=['GET', 'POST'])
+def delete_dialect(dialect_id):
+
+    context = {
+        "dialect" : Dialect.query.get_or_404(dialect_id)
+    }
+    if request.method == 'POST' :
+        dialect = Dialect.query.get_or_404(dialect_id)
+        try :
+            db.session.delete(dialect)
+            db.session.commit()
+            return redirect('/')
+        except :
+            return 'There was a problem deleting that Dialect'
+    else :
+        return render_template('delete_dialect_confirm.html', **context)
+
+
+@languages_bp.route('/dialect/add/<int:language_id>', methods=['GET', 'POST'])
+def add_dialect(language_id) :
+
+    context = {
+        "language" : Language.query.get_or_404(language_id)
+    }
+
+    if request.method == 'POST' :
+
+        print(request.form)
+
+        name = request.form['name']
+        parent_dialect_id = request.form['parent_dialect_id']
+        parent = None
+        if parent_dialect_id:
+            parent_dialect_id = int(parent_dialect_id)
+            parent = Dialect.query.get_or_404(parent_dialect_id)
+        description = request.form['description']
+        geo_tag = request.form['geo_tag']
+        region = request.form['region']
+
+
+        dialect = Dialect(
+            name = name,
+            language_id=language_id,
+            parent_dialect_id = parent_dialect_id,
+            description = description,
+            geo_tag = geo_tag,
+            region = region,
+            parent = parent
+            )
+        
+        db.session.add(dialect)
+        db.session.commit()
+
+        return redirect(url_for('languages.language_detail', language_id=language_id))
+
+    return render_template('add_dialect.html', **context)
+
+
+
+
+
+
+
+
 
 @languages_bp.route('/scripts', methods=['GET', 'POST'])
 def scripts():

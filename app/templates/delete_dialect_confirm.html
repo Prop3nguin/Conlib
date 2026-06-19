@@ -45,10 +45,10 @@ Conlib - delete Lang
 
 {% block content %}
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-<h1 class="PageTitle">Delete Language</h1>
+<h1 class="PageTitle">Delete Dialect</h1>
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-<h1 class="Warning">Are you sure you want to delete {{ language.name }}?</h1>
-<form action="{{ url_for('languages.delete_language', language_id=language.id) }}" method="POST" style="display:inline;">
+<h1 class="Warning">Are you sure you want to delete {{ dialect.name }}?</h1>
+<form action="{{ url_for( 'languages.delete_dialect', dialect_id=dialect.id) }}" method="POST" style="display:inline;">
     <ul class="options">
         <li>
             <button type="submit">Yes</button>
