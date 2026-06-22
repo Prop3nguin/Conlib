@@ -43,6 +43,7 @@ Oxblood : rgb(58, 16, 24)
 <section>   
     <ul class="Equalizer">
         {% for language in languages %}
+        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
         <h2 class="InstanceTitle"><a href="{{ url_for( 'languages.language_detail', language_id=language.id ) }}">{{ language.name }}</a></h2>
         <ul class="Columns">
             <li>

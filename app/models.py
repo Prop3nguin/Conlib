@@ -71,12 +71,13 @@ class RelationshipType(enum.Enum):
 
 class ScriptType(enum.Enum):
     alphabet    = "alphabet"
-    abjad       = "abjad"
-    abugida     = "abugida"
-    syllabary   = "syllabary"
-    logographic = "logographic"
-    mixed       = "mixed"
-    other       = "other"
+    abjad         = "abjad"
+    polysynthetic = "polysynthetic"
+    abugida       = "abugida"
+    syllabary     = "syllabary"
+    logographic   = "logographic"
+    mixed         = "mixed"
+    other         = "other"
 
 
 class ScriptDirection(enum.Enum):

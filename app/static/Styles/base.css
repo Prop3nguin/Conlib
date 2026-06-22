@@ -51,7 +51,8 @@ body::before {
     position: fixed;
     z-index: -1;
     font-size: 17rem;
-    opacity: .03;
+    opacity: .15;
+    color: black;
     pointer-events: none;
     line-break: none;
 }
@@ -78,18 +79,20 @@ a {
     text-decoration: none;
     color: var(--GoldAccentColor);
     text-shadow: 2px 2px 2px black;
-    transition: all 0.6s ease;
-}
-a:hover {
-    text-shadow: 5px 5px 5px black;
-    transform: translateY(5px);
+    transition: all 0.3s ease;
 }
 nav a {
+    display: inline-block;
     padding: 5px;
     padding-left: 20px;
     padding-right: 20px;
     background-color: var(--Shadow);
     border-radius: 15px;
+    box-shadow: 2px 2px 5px black;
+}
+nav a:hover {
+    transform: translateY( -5px );
+    box-shadow: 5px 5px 7px black;
 }
 textarea {
     padding: 5px;
@@ -143,7 +146,7 @@ other classes for basic themes and positioning website-wide
 .PageTitle {
     text-align: center;
     letter-spacing: 20px;
-    font-size: 350%;
+    font-size: 5rem;
     margin: 50px;
     padding: 50px;
 }
@@ -199,11 +202,19 @@ section {
     border-radius: 10px;
 }
 .Columns li a {
-    line-height: 80px;
+    display: inline-block;
+    margin-top: 20px;
     padding: 10px;
     background-color: var(--Oxblood);
     border-radius: 10px;
-    box-shadow: 5px 5px 5px var(--Shadow);
+    box-shadow: 2px 2px 5px black;
+}
+.Columns li a:hover{
+    transform: translateY( -5px );
+    text-shadow: none;
+    text-shadow: 2px 2px 2px black;
+    box-shadow: none;
+    box-shadow: 5px 5px 7px black;
 }
 .Structure {
     background-color: var(--Oxblood);
@@ -272,6 +283,7 @@ section {
     padding: 40px;
     border-radius: 10px;
     background-color: var(--Oxblood);
+    box-shadow: 2px 2px 5px black;
 }
 .Entry {
     margin-top: 10px;
@@ -295,13 +307,16 @@ section {
     margin: 10px;
 }
 form {
-
-    width: fit-content;
     height: fit-content;
+    width: fit-content;
     justify-self: center;
-    background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood)) ;
+    padding: 10px;
+    min-height: 100px;
+    min-width: 20%;
+    margin: 50px;
+    margin-top: 0;
     border-radius: 10px;
-    margin: 10px;
+    background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood));
 }
 form ul {
     width: 100%;
@@ -321,9 +336,9 @@ form ul li {
 label {
     font-family: 'Uncial Antiqua';
     display: inline-block;
-    width: 100px;
     white-space: nowrap;
-    margin-right:100px;
+    
+    
 }
 input, select, option {
     padding: 5px;
@@ -344,6 +359,9 @@ textarea {
     padding: 0;
 }
 footer {
+    background-color: var(--Oxblood);
+}
+footer .InstanceTitle {
     background-color: var(--DarkCrimson);
 }
 footer ul {
@@ -353,7 +371,7 @@ footer ul {
     display: flex;
 }
 footer ul li {
-    background-color: var(--Oxblood);
+    background-color: var(--DarkCrimson);
     border-radius: 10px;
     text-align: center;
     padding: 10px;

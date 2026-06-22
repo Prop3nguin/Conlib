@@ -72,6 +72,7 @@ Oxblood : rgb(58, 16, 24)
     <div class="divider">✦ ───────── ◈ ───────── ✦</div>
     <h3 class="TabTitle">Required Language Information</h3>
     <form method="POST" action="{{ url_for('languages.add_language') }}">
+        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
         <ul>
             <li>
                 <label for="name">Name:</label>
@@ -89,13 +90,23 @@ Oxblood : rgb(58, 16, 24)
                 <br>
                 <label for="WordOrder">Word Order:</label>
                 <select name="WordOrder">
-                    <option value="SOV">Subject-Object-Verb</option>
-                    <option value="SVO">Subject-Verb-Object</option>
-                    <option value="VSO">Verb-Subject-Object</option>
-                    <option value="VOS">Verb-Object-Subject</option>
-                    <option value="OVS">Object-Verb-Subject</option>
-                    <option value="OSV">Object-Subject-Verb</option>
+                    <option value="SOV">Subject Object Verb</option>
+                    <option value="SVO">Subject Verb Object</option>
+                    <option value="VSO">Verb Subject Object</option>
+                    <option value="VOS">Verb Object Subject</option>
+                    <option value="OVS">Object Verb Subject</option>
+                    <option value="OSV">Object Subject Verb</option>
                     <option value="free">Free</option>
+                </select>
+                <br>
+                <label for="MorphologicalType">Morpho-Type:</label>
+                <select name="MorphologicalType">
+                    <option value="isolating">Isolating</option>
+                    <option value="agglutinative">Agglutinative</option>
+                    <option value="fusional">Fusional</option>
+                    <option value="creole">Creole</option>
+                    <option value="polysynthetic">Polysynthetic</option>
+                    <option value="other">Other</option>
                 </select>
                 <br>
             </li>
@@ -106,6 +117,7 @@ Oxblood : rgb(58, 16, 24)
                 <br>
             </li>
         </ul>
+        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
         <ul class="Button"><button type="submit" class="submit">Add Language</button></ul>
     </form>
 {% endblock %}
