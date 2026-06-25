@@ -20,41 +20,47 @@ Oxblood : rgb(58, 16, 24)
     --DarkCrimson: rgb(92, 24, 34); 
     --Oxblood: rgb(58, 16, 24);
     --LightTextColor: rgb(240, 236, 224);
-    --DarkTextColor: rgb(45, 37, 26);
     --FaintTextColor: rgba(240, 236, 224, 0.3);
-    --Shadow: rgba(0, 8, 26, 0.3);
+    --Shadow: rgba(0, 0, 0, 0.6);
 }
 
 * {
     padding: 0;
     margin: 0;
     color: var(--LightTextColor);
+    text-shadow: 5px 5px 2px var(--Shadow);
+    font-family: 'Almendra', 'serif';
+    font-weight: 400;
+    font-style: normal;
 }
 body {
     padding-top: 75px; /* for Navbar */
-    font-family: 'uncial antiqua';
-    font-weight: 400;
-    font-style: normal;
     background-color: var(--PrimaryBackgroundColor);
     background-image:
         radial-gradient(
-            rgba(68, 37, 139, 0.3) 1px,
+            rgba(68, 37, 139, 0.3) 1.5px,
             transparent 1px
         );
     background-size: 12px 12px;
 }
-p {
-    font-family: 'Times New Roman', Times, serif;
-}
-body::before {
-    content: "◈𐌰𐌲𐌳𐌸𐌹◈";
+.BackgroundText {
+    width: 100%;
+    height: 100%;
+    font-family: 'Mea Culpa', 'Cursive';
+    font-weight: 400;
     position: fixed;
+    justify-self: center;
+    text-align: center;
     z-index: -1;
-    font-size: 17rem;
+    font-size: 18rem;
     opacity: .15;
     color: black;
-    pointer-events: none;
     line-break: none;
+    pointer-events: none;
+    user-select: none;
+    padding: 50px;
+    background-image: linear-gradient(transparent, black);
+    text-shadow: none;
 }
 nav {
     top: 0;
@@ -63,9 +69,9 @@ nav {
     position: fixed;
     position: top;
     width: 100%;
-    font-family: 'Amita';
     background-color: var(--DarkCrimson);
     overflow: hidden;
+    box-shadow: 0 5px 20px var(--Shadow);
 }
 nav ul {
     list-style-type: none;
@@ -76,9 +82,9 @@ nav ul li {
     padding: 14px 20px;
 }
 a {
-    text-decoration: none;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
     color: var(--GoldAccentColor);
-    text-shadow: 2px 2px 2px black;
     transition: all 0.3s ease;
 }
 nav a {
@@ -88,34 +94,17 @@ nav a {
     padding-right: 20px;
     background-color: var(--Shadow);
     border-radius: 15px;
-    box-shadow: 2px 2px 5px black;
+    background-color: var(--Oxblood);
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
 nav a:hover {
     transform: translateY( -5px );
-    box-shadow: 5px 5px 7px black;
+    box-shadow: 5px 5px 7px var(--Shadow);
 }
 textarea {
     padding: 5px;
     border-radius: 5px;
-    font-family: 'Amita';
     background-color: var(--PrimaryBackgroundColor);
-}
-button {
-    font-family: 'Amita';
-    border-radius: 5px;
-    background-color: var(--PrimaryBackgroundColor);
-    box-shadow: 3px 3px 10px black;
-    padding: 20px;
-    margin: 40px;
-    transition: 0.3s ease all;
-    min-width: 200px;
-}
-button:hover {
-    font-family: 'Amita';
-    background-color: var(--PrimaryBackgroundColor);
-    box-shadow: 8px 8px 10px black;
-    margin: 40px;
-    transform: translateY(-5px);
 }
 .navSymbol {
     margin-left: 15%;
@@ -127,7 +116,10 @@ button:hover {
     color: var(--GoldAccentColor);
     opacity: 0.6;
     text-align: center;
-    margin:50px;
+    margin: 50px;
+    text-shadow: 5px 5px 2px var(--Shadow);
+    user-select: none;
+    white-space: nowrap;
 }
 
 /* 
@@ -144,50 +136,79 @@ other classes for basic themes and positioning website-wide
 */
 
 .PageTitle {
+    color: var(--GoldAccentColor);
+    text-shadow: 5px 5px 2px black;
     text-align: center;
     letter-spacing: 20px;
-    font-size: 5rem;
+    font-size: 10vw;
+    white-space: nowrap;
+    font-family: 'Mea Culpa';
+    font-weight: 400;
     margin: 50px;
     padding: 50px;
 }
-.disclaimer {
-    color: var(--FaintTextColor);
-    margin-top: 20px;
-    text-indent: 20px;
-}
 section {
+    justify-self: center;
+    z-index: 1;
     height: fit-content;
     width: fit-content;
-    justify-self: center;
-    padding: 10px;
     min-height: 100px;
     min-width: 20%;
+    max-width: 95%;
+    padding: 10px;
     margin: 50px;
     margin-top: 0;
     border-radius: 10px;
     background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood));
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
 .TabTitle{
-    font-family: 'Amita';
+    font-family: 'Almendra', 'serif';
+    font-weight: 400;
+    font-style: italic;
     justify-self: center;
+    z-index: 0;
     padding: 40px;
     background-color: var(--DarkCrimson);
-    transform: translateY(10px);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
+    text-shadow: 5px 5px 2px var(--Shadow);
+    box-shadow: 5px 5px 2px var(--Shadow);
+    margin-bottom: 0;
 }
 .TabTitle::before {
     content: '◈';
+    font-style: normal;
     position: relative;
     right: 20px;
     color: var(--GoldAccentColor);
 }
 .TabTitle::after {
     content: '◈';
+    font-style: normal;
     position: relative;
     left: 20px;
     color: var(--GoldAccentColor);
 }
+.InstanceTitle {
+    font-family: 'Amita';
+    font-weight: bold;
+    text-align: center;
+    padding: 40px;
+    border-radius: 10px;
+    background-color: var(--Oxblood);
+    text-shadow: 5px 5px 2px var(--Shadow);
+    box-shadow: 5px 5px 2px var(--Shadow);
+}
+.disclaimer {
+    color: var(--FaintTextColor);
+    margin-top: 20px;
+    text-indent: 20px;
+}
+
+
+
+
 .Columns {
     min-width: 50vw;
     width: 100%;
@@ -201,26 +222,30 @@ section {
     min-height: 200px;  
     border-radius: 10px;
 }
-.Columns li a {
+.Columns a {
     display: inline-block;
     margin-top: 20px;
     padding: 10px;
     background-color: var(--Oxblood);
     border-radius: 10px;
-    box-shadow: 2px 2px 5px black;
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
-.Columns li a:hover{
+.Columns a:hover{
     transform: translateY( -5px );
-    text-shadow: none;
-    text-shadow: 2px 2px 2px black;
-    box-shadow: none;
-    box-shadow: 5px 5px 7px black;
+    box-shadow: 7px 7px 7px var(--Shadow);
 }
+
+
+
+
+
+
 .Structure {
     background-color: var(--Oxblood);
     padding: 10px;
     margin-top: 10px;
     border-radius: 10px;
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
 .Structure ul {
     list-style: none;
@@ -234,12 +259,20 @@ section {
 .Structure li::before {
     content: '└ ';
 }
+
+
+
+
+
+
+
 .card {
     border-radius: 10px;
     padding: 10px;
     background-color: var(--DarkCrimson);
     justify-self: center;
-    width: 16.5%;
+    min-width: 16.5%;
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
 .MapNDisc {
     justify-content: center;
@@ -247,22 +280,26 @@ section {
     display: flex;
 }
 .Description {
-    min-width: 20%;
-    max-width: 50%;
+    min-width: 20vw;
+    max-width: 40vw;
     height: fit-content;
     margin: 20px;
     padding: 10px;
     background-color: var(--DarkCrimson);
     border-radius: 10px;
     line-height: 50px;
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
 .Description p {
-    text-indent: 50px;
+    font-size: 1.3rem;
+    line-height: 2rem;
+    text-indent: 2rem;
     background-color: var(--Oxblood);
     border-radius: 10px;
     min-height: 45%;
     margin-top: 10px;
     padding: 30px;
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
 .AddDelete {
     list-style-type: none;
@@ -275,16 +312,12 @@ section {
     padding: 10px;
     margin: 10px;
     margin-bottom: none;
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
-.InstanceTitle {
-    font-family: 'Amita';
-    font-weight: bold;
-    text-align: center;
-    padding: 40px;
-    border-radius: 10px;
-    background-color: var(--Oxblood);
-    box-shadow: 2px 2px 5px black;
-}
+
+
+
+
 .Entry {
     margin-top: 10px;
     border-radius: 10px;
@@ -305,18 +338,7 @@ section {
     background-color: var(--Oxblood);
     padding: 20px;
     margin: 10px;
-}
-form {
-    height: fit-content;
-    width: fit-content;
-    justify-self: center;
-    padding: 10px;
-    min-height: 100px;
-    min-width: 20%;
-    margin: 50px;
-    margin-top: 0;
-    border-radius: 10px;
-    background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood));
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
 form ul {
     width: 100%;
@@ -324,7 +346,7 @@ form ul {
     list-style: none;
     justify-content: center;
 }
-form ul li {
+form li {
     background-color: var(--Oxblood);
     border-radius: 10px;
     padding: 20px;
@@ -332,23 +354,23 @@ form ul li {
     margin-bottom: 20px;
     margin-left: 10px;
     margin-right: 10px;
+    box-shadow: 5px 5px 2px var(--Shadow);
 }
 label {
     font-family: 'Uncial Antiqua';
     display: inline-block;
+    width: 100px;
     white-space: nowrap;
-    
-    
+    margin-right:100px;
 }
 input, select, option {
     padding: 5px;
     border-radius: 10px;
-    font-family: 'Amita';
     margin-bottom: 10px;
-    background-color: var(--PrimaryBackgroundColor);
+    background-color: var(--DarkCrimson);
 }
 textarea {
-    background-color: var(--PrimaryBackgroundColor);
+    background-color: var(--DarkCrimson);
     z-index: -2;
 }
 .submit {
@@ -370,7 +392,7 @@ footer ul {
     justify-content: space-evenly;
     display: flex;
 }
-footer ul li {
+footer li {
     background-color: var(--DarkCrimson);
     border-radius: 10px;
     text-align: center;
@@ -378,5 +400,84 @@ footer ul li {
     display: inline-block;
 }
 footer h4 {
-    font-family: 'Amita';
+    font-family: 'Uncial Antiqua';
+}
+.FooterSection {
+    border-top: 2px solid var(--Shadow);
+    border-left: 2px solid var(--Shadow);
+}
+select {
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    border-top: 2px solid var(--Shadow);
+    border-left: 2px solid var(--Shadow);
+}
+select:focus {
+    appearance: none;
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
+    outline: none;
+}
+input {
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    border-top: 2px solid var(--Shadow);
+    border-left: 2px solid var(--Shadow);
+}
+input:focus {
+    appearance: none;
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
+    outline: none;
+}
+textarea {
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    border-top: 2px solid var(--Shadow);
+    border-left: 2px solid var(--Shadow);
+}
+textarea:focus {
+    appearance: none;
+    border-top: 2px solid transparent;
+    border-left: 2px solid transparent;
+    outline: none;
+}
+button {
+    background-color: var(--Oxblood);
+    box-shadow: 5px 5px 2px var(--Shadow);
+    border: none;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 40px;
+    transition: 0.3s ease all;
+    min-width: 200px;
+}
+button:hover {
+    background-color: var(--Oxblood);
+    box-shadow: 7px 7px 7px var(--Shadow);
+    margin: 40px;
+    transform: translateY(-5px);
+}
+.Warning {
+    color: red;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    justify-self: center;
+    background-color: rgb(30, 30, 30);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 40px;
+    border-top: 2px solid grey;
+    border-left: 2px solid grey;
+    border-bottom: 2px solid black;
+    border-right: 2px solid black;
 }

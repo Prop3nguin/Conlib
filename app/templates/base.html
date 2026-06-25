@@ -5,7 +5,7 @@
         <link href="{{ url_for('static', filename='Styles/base.css')}}" rel="stylesheet" />
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Amita:wght@400;700&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Almendra:ital,wght@0,400;0,700;1,400;1,700&family=Amita:wght@400;700&family=Comfortaa:wght@300..700&family=Libertinus+Mono&family=Mea+Culpa&family=Uncial+Antiqua&display=block" rel="stylesheet">
         {% block style %}
         {% endblock %}
     </head>
@@ -20,26 +20,27 @@
                 <li class="navSymbol">◈</li>
             </ul>
         </nav>
+        <div class="BackgroundText">Prop3nguin</div>
         {% block content %}
         {% endblock %}
         <div class="divider">✦ ───────── ◈ ───────── ✦</div>
         <footer>
             <ul>
-                <li>
+                <li class="FooterSection">
                     <h4>Author Name & Username</h4>
                     <ul>
                         <li>Spencer Haley</li>
                         <li>Prop3nguin</li>
                     </ul>
                 </li>
-                <li>
+                <li class="FooterSection">
                     <h4>Social Links</h4>
                     <ul>
                         <li><a href="https://github.com/Prop3nguin">Github</a></li>
                         <li><a href="https://www.linkedin.com/in/spencer-haley-ab509a402/">Linkdin</a></li>
                     </ul>
                 </li>
-                <li>
+                <li class="FooterSection">
                     <h4>Other Projects</h4>
                     <ul>
                         <li><a href="https://prop3nguin.github.io">Portfolio</a></li>

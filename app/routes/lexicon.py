@@ -30,7 +30,7 @@ lexicon_bp = Blueprint("lexicon", __name__, url_prefix="/lexicon")
 # Words  (scoped to language; dialect optional filter)
 # ===========================================================================
 
-@lexicon_bp.route("/<int:language_id>/lexeme", methods=["GET", "POST"])
+@lexicon_bp.route("/<int:language_id>", methods=["GET", "POST"])
 def lexemes(language_id):
     """
     GET  — list all words for a language.

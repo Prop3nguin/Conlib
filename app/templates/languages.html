@@ -4,47 +4,17 @@
 ConLib - Languages
 {% endblock %}
 
-{% block style %}
-    <style>
-/*
-primary Background : rgb(18, 24, 38)
-
-gold accent : rgb(201, 167, 92) 
-
-    Reds ;
-Burgandy : rgb(68, 22, 35)
-
-Dark crimson : rgb(92, 24, 34)
-
-Oxblood : rgb(58, 16, 24) 
-*/
-        ul {
-            list-style-type: none;
-            padding: 10;
-        }
-        ul li li a {
-            text-indent: 50px;
-        }
-        .divider {
-        text-align: center;
-        margin: 2rem 0;
-        opacity: .6;
-        }
-    </style>
-
-{% endblock %}
-
 {% block content %}
 
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <h1 class="PageTitle">Conlang Library</h1>
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-<h3 class="TabTitle">Languages, Dialects and Articles</h3>
+<h2 class="TabTitle">Languages, Dialects and Articles</h2>
 <section>   
     <ul class="Equalizer">
         {% for language in languages %}
         <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-        <h2 class="InstanceTitle"><a href="{{ url_for( 'languages.language_detail', language_id=language.id ) }}">{{ language.name }}</a></h2>
+        <h3 class="InstanceTitle"><a href="{{ url_for( 'languages.language_detail', language_id=language.id ) }}">{{ language.name }}</a></h3>
         <ul class="Columns">
             <li>
                 <h3 class="InstanceTitle">Dialects:</h3>

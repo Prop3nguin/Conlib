@@ -1,44 +1,5 @@
 {% extends "base.html" %}
 
-{% block style %}
-<style>
-/*
-primary Background : rgb(18, 24, 38)
-
-gold accent : rgb(201, 167, 92) 
-
-    Reds ;
-Burgandy : rgb(68, 22, 35)
-
-Dark crimson : rgb(92, 24, 34)
-
-Oxblood : rgb(58, 16, 24) 
-*/
-    .Warning {
-        color: red;
-        font-family: Arial, Helvetica, sans-serif;
-        font-weight: bold;
-        justify-self: center;
-        background-color: rgb(30, 30, 30);
-        border-radius: 10px;
-        padding: 20px;
-        margin: 40px;
-        border-top: 2px solid grey;
-        border-left: 2px solid grey;
-        border-bottom: 2px solid black;
-        border-right: 2px solid black;
-    }
-    .options {
-        display: flex;
-        justify-content: center;
-        list-style: none;
-    }
-    .options li {
-        margin: 40px;
-    }
-</style>
-{% endblock %}
-
 {% block title %}
 Conlib - delete Lang
 {% endblock %}
@@ -47,15 +8,13 @@ Conlib - delete Lang
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <h1 class="PageTitle">Delete Language</h1>
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-<h1 class="Warning">Are you sure you want to delete {{ language.name }}?</h1>
-<form action="{{ url_for('languages.delete_language', language_id=language.id) }}" method="POST" style="display:inline;">
-    <ul class="options">
-        <li>
+<h2 class="TabTitle" style="color: red;">Are you sure you want to delete {{ language.name }}?</h2>
+<section>
+    <form action="{{ url_for('languages.delete_language', language_id=language.id) }}" method="POST" style="display:inline;">
+        <ul class="Columns">
             <button type="submit">Yes</button>
-        </li>
-        <li>
             <button type="button" onclick="window.location.href='/';">No</button>
-        </li>
-    </ul>
-</form>
+        </ul>
+    </form>
+</section>
 {% endblock %}

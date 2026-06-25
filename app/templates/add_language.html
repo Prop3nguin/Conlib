@@ -4,120 +4,60 @@
 Conlib - Add Language
 {% endblock %}
 
-{% block style %}
-    <style>
-/*
-primary Background : rgb(18, 24, 38)
-
-gold accent : rgb(201, 167, 92) 
-
-    Reds ;
-Burgandy : rgb(68, 22, 35)
-
-Dark crimson : rgb(92, 24, 34)
-
-Oxblood : rgb(58, 16, 24) 
-*/
-        form {
-            background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood)) ;
-            border-radius: 15px;
-            margin: 10px;
-        }
-        form ul {
-            width: 100%;
-            display: flex;
-            list-style: none;
-            justify-content: center;
-        }
-        form ul li {
-            background-color: var(--Oxblood);
-            border-radius: 5px;
-            padding: 20px;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            margin-left: 10px;
-            margin-right: 10px;
-        }
-        label {
-            font-family: 'Uncial Antiqua';
-            display: inline-block;
-            width: 100px;
-            white-space: nowrap;
-            margin-right:100px;
-        }
-        input, select, option {
-            padding: 5px;
-            border-radius: 5px;
-            font-family: 'Amita';
-            margin-bottom: 10px;
-            background-color: var(--PrimaryBackgroundColor);
-        }
-        textarea {
-            background-color: var(--PrimaryBackgroundColor);
-            z-index: -2;
-        }
-        .submit {
-            width: 90%;
-        }
-        .button {
-            margin: 0;
-            padding: 0;
-        }
-</style>
-{% endblock %}
-
 {% block content %}
     <div class="divider">✦ ───────── ◈ ───────── ✦</div>
     <h1 class="PageTitle">Add Language</h1>
     <div class="divider">✦ ───────── ◈ ───────── ✦</div>
     <h3 class="TabTitle">Required Language Information</h3>
-    <form method="POST" action="{{ url_for('languages.add_language') }}">
-        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-        <ul>
-            <li>
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" placeholder="English, Español etc." required>
-                <br>
-                <label for="status">Status:</label>
-                <select name="status" required>
-                    <option value="living">Living</option>
-                    <option value="extinct">Extinct</option>
-                    <option value="liturgical">Liturgical</option>
-                    <option value="constructed">Constructed</option>
-                </select>
-                <br>
-                <p class="disclaimer">Not Required --</p>
-                <br>
-                <label for="WordOrder">Word Order:</label>
-                <select name="WordOrder">
-                    <option value="SOV">Subject Object Verb</option>
-                    <option value="SVO">Subject Verb Object</option>
-                    <option value="VSO">Verb Subject Object</option>
-                    <option value="VOS">Verb Object Subject</option>
-                    <option value="OVS">Object Verb Subject</option>
-                    <option value="OSV">Object Subject Verb</option>
-                    <option value="free">Free</option>
-                </select>
-                <br>
-                <label for="MorphologicalType">Morpho-Type:</label>
-                <select name="MorphologicalType">
-                    <option value="isolating">Isolating</option>
-                    <option value="agglutinative">Agglutinative</option>
-                    <option value="fusional">Fusional</option>
-                    <option value="creole">Creole</option>
-                    <option value="polysynthetic">Polysynthetic</option>
-                    <option value="other">Other</option>
-                </select>
-                <br>
-            </li>
-            <li>
-                <label for="description">Description:</label>
-                <br>
-                <textarea id="description" name="description" rows="12" cols="60" placeholder="Write details about what the Language is supposed to acomplish, weather it be for fun, for a narrative, or for more efficient use by yourself (like a shorthand)"></textarea>
-                <br>
-            </li>
-        </ul>
-        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
-        <ul class="Button"><button type="submit" class="submit">Add Language</button></ul>
-    </form>
+    <section>
+        <form method="POST" action="{{ url_for('languages.add_language') }}">
+            <div class="divider">✦ ───────── ◈ ───────── ✦</div>
+            <ul>
+                <li>
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" placeholder="English, Español etc." required>
+                    <br>
+                    <label for="status">Status:</label>
+                    <select name="status" required>
+                        <option value="living">Living</option>
+                        <option value="extinct">Extinct</option>
+                        <option value="liturgical">Liturgical</option>
+                        <option value="constructed">Constructed</option>
+                    </select>
+                    <br>
+                    <p class="disclaimer">Not Required --</p>
+                    <br>
+                    <label for="WordOrder">Word Order:</label>
+                    <select name="WordOrder">
+                        <option value="SOV">Subject Object Verb</option>
+                        <option value="SVO">Subject Verb Object</option>
+                        <option value="VSO">Verb Subject Object</option>
+                        <option value="VOS">Verb Object Subject</option>
+                        <option value="OVS">Object Verb Subject</option>
+                        <option value="OSV">Object Subject Verb</option>
+                        <option value="free">Free</option>
+                    </select>
+                    <br>
+                    <label for="MorphologicalType">Morpho-Type:</label>
+                    <select name="MorphologicalType">
+                        <option value="isolating">Isolating</option>
+                        <option value="agglutinative">Agglutinative</option>
+                        <option value="fusional">Fusional</option>
+                        <option value="creole">Creole</option>
+                        <option value="polysynthetic">Polysynthetic</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <br>
+                </li>
+                <li>
+                    <label for="description">Description:</label>
+                    <br>
+                    <textarea id="description" name="description" rows="12" cols="60" placeholder="Write details about what the Language is supposed to acomplish, weather it be for fun, for a narrative, or for more efficient use by yourself (like a shorthand)"></textarea>
+                    <br>
+                </li>
+            </ul>
+            <div class="divider">✦ ───────── ◈ ───────── ✦</div>
+            <ul class="Button"><button type="submit" class="submit">Add Language</button></ul>
+        </form>
+    </section>
 {% endblock %}
