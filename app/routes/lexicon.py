@@ -14,9 +14,10 @@ URL conventions:
                        grammar_rules scoped by language_id (dialect_id is a filter param)
 """
 
-from flask import Blueprint, request, jsonify, abort
+from flask import Blueprint, request, jsonify, abort, render_template
 from app.models import (
     db,
+    Language, Dialect,
     Lexeme, Morpheme,
     Sense, SemanticField,
     Pronunciation,
@@ -37,7 +38,12 @@ def lexemes(language_id):
            Optional query params: ?dialect_id=, ?pos=, ?register=, ?q= (lemma search)
     POST — create a new word.
     """
-    pass
+
+    context = {
+        "language" : Language.query.get_or_404(language_id)
+    }
+
+    return render_template('lexicon.html', **context)
 
 
 @lexicon_bp.route("/<int:language_id>/lexeme/<int:lexeme_id>",
