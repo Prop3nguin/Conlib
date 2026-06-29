@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ language.name }} add word
+{% endblock %}
+
+{% block content %}
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h1 class="PageTitle">Create Lexeme</h1>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h2 class="TabTitle">Lexeme Config</h2>
+<section>
+    <form method="POST" action="{{ url_for('lexicon.add_lexeme', language_id=language.id) }}">
+        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
+        <ul>
+            <li>
+                <label for="lemma">Lemma:</label>
+                <input type="text" id="lemma", name="lemma" required>
+                <br>
+                <label for="gloss">Glossary:</label>
+                <input type="text" id="gloss", name="gloss" rows="6" required>
+                <br>
+                <label for="part_of_speech">Part of Speech:</label>
+                <input type="text" id="part_of_speech", name="part_of_speech" required>
+                <br>
+            </li>
+            <li>
+                <label for="notes">Additional Notes:</label>
+                <br>
+                <textarea id="notes" name="notes" rows="12", cols="60"></textarea>
+                <br>
+            </li>
+        </ul>
+        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
+        <ul class="Button"><button type="submit" class="submit">Add Lexeme to {{ language.name }}</button></ul>
+    </form>
+</section>
+{% endblock %}

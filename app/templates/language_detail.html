@@ -34,7 +34,9 @@
     <ul class="Edit">
         <li>Edit Description</li>
         <li>Add Script</li>
-        <li>Add Lexeme</li>
+        <li>
+            <a href="{{ url_for('lexicon.add_lexeme', language_id=language.id) }}">Add Lexeme</a>
+        </li>
         <li>Add Etymology Article / Event</li>
         <li>Add Idiom / Sample Text</li>
         <li>
@@ -94,7 +96,22 @@
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <h3 class="TabTitle"><a href="{{ url_for( 'lexicon.lexemes', language_id=language.id ) }}">{{ language.name }} Lexicon</a></h3>
 <section>
-    
+    <table>
+        <thead>
+            <th>Lexeme type</th>
+            <th>Glossary</th>
+            <th>Lemma</th>
+            <th>Wordforms</th>
+        </thead>
+        {% for lexeme in language.lexemes %}
+        <tbody>
+                <td>{{ lexeme.part_of_speech }}</td>
+                <td class="block">{{ lexeme.gloss }}</td>
+                <td>{{ lexeme.lemma }}</td>
+                <td> WIP </td>
+        </tbody>
+        {% endfor %}
+    </table>
 </section>
 
 {% endblock %}

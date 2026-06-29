@@ -10,18 +10,58 @@
 <div class="divider">✦ ───────── ◈ ───────── ✦</div>
 <h3 class="TabTitle">Edit Actions</h3>
 <section>
+    <div class="divider">✦ ───────── ◈ ───────── ✦</div>
     <ul class="Edit">
         <li>Edit Description</li>
         <li>Add Script</li>
-        <li>Add Lexeme</li>
+        <li>
+            <a href="{{ url_for('lexicon.add_lexeme', language_id=language.id) }}">Add Lexeme</a>
+        </li>
         <li>Remove Lexeme</li>
         <li>Add Etymology Article / Event</li>
         <li>Add Idiom / Sample Text</li>
     </ul>
 </section>
 <h2 class="TabTitle">Lexemes</h2>
-<section>
-    
+<section class="lexemes">
+    {% for lexeme in language.lexemes %}
+    <div class="divider">✦ ───────── ◈ ───────── ✦</div>
+    <h3 class="InstanceTitle">{{ lexeme.lemma }}</h3>
+    <ul class="Columns">
+        <li>
+            <p class="heading">Basics</p>
+            <table class="lexeme_basics">
+                <thead>
+                    <th>Lemma</th>
+                    <th>Part of Speech</th>
+                </thead>
+                <tbody>
+                    <td>{{ lexeme.lemma }}</td>
+                    <td>{{ lexeme.part_of_speech }}</td>
+                </tbody>
+            </table>
+        </li>
+        <li>
+            {% if lexeme.notes %}
+            <p class="heading">Notes</p>
+            <p class="box">{{ lexeme.notes }}</p>
+            {% endif %}
+            <p class="heading">Glossary</p>
+            <p class="box">{{ lexeme.gloss }}</p>
+        </li>
+        <li>
+            <p class="heading">Wordforms</p>
+            <table class="Wordforms">
+                <thead>
+                    <th>Word Variations</th>
+                    <th>Parent Dialect</th>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </li>
+    </ul>
+    {% endfor %}
 </section>
 
 

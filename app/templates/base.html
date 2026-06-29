@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{% block title %}Conlang Library{% endblock %}</title>
+        <title>{% block title %}Conlang Library{% endblock %}</title>   
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png')}}"/>
         <link href="{{ url_for('static', filename='Styles/base.css')}}" rel="stylesheet" />
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,16 +14,18 @@
         <nav>
             <ul>
                 <li class="navSymbol">◈</li>
-                <li><a href="{{ url_for( 'languages.languages_home' ) }}">Languages</a></li>
+                <li><a href="{{ url_for( 'languages.languages_home') }}">Languages</a></li>
                 <li><a href="{{ url_for( 'translator.translator_home')}}">Translator</a></li>
-                <li><a href="{{ url_for( 'export.export_home' ) }}">Export</a></li>
+                <li><a href="{{ url_for( 'export.export_home') }}">Export</a></li>
                 <li><a href="{{ url_for( 'languages.add_language') }}">Add</a></li>
                 <li class="navSymbol">◈</li>
             </ul>
         </nav>
         <div class="BackgroundText">Prop3nguin</div>
+        <!-- base.html Header end -->
         {% block content %}
         {% endblock %}
+        <!-- base.html Footer Start -->
         <div class="divider">✦ ───────── ◈ ───────── ✦</div>
         <footer>
             <ul>

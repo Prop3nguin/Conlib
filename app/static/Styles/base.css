@@ -153,7 +153,7 @@ section {
     height: fit-content;
     width: fit-content;
     min-height: 100px;
-    min-width: 20%;
+    min-width: 50%;
     max-width: 95%;
     padding: 10px;
     margin: 50px;
@@ -191,10 +191,13 @@ section {
     color: var(--GoldAccentColor);
 }
 .InstanceTitle {
-    font-family: 'Amita';
-    font-weight: bold;
+    justify-self: center;
+    width: fit-content;
+    min-width: 75%;
+    font-family: 'Almendra';
+    font-weight: 700;
     text-align: center;
-    padding: 40px;
+    padding: 20px;
     border-radius: 10px;
     background-color: var(--Oxblood);
     text-shadow: 5px 5px 2px var(--Shadow);
@@ -221,6 +224,7 @@ section {
     width: 100%;
     min-height: 200px;  
     border-radius: 10px;
+    min-width: 20vw;
 }
 .Columns a {
     display: inline-block;
@@ -234,7 +238,9 @@ section {
     transform: translateY( -5px );
     box-shadow: 7px 7px 7px var(--Shadow);
 }
-
+a:hover {
+    color: var(--LightTextColor);
+}
 
 
 
@@ -420,10 +426,7 @@ select {
     border-top: 2px solid var(--Shadow);
     border-left: 2px solid var(--Shadow);
 }
-select:focus {
-    appearance: none;
-    border-top: 2px solid transparent;
-    border-left: 2px solid transparent;
+select:focus, input:focus, textarea:focus {
     outline: none;
 }
 input {
@@ -435,12 +438,6 @@ input {
     border-top: 2px solid var(--Shadow);
     border-left: 2px solid var(--Shadow);
 }
-input:focus {
-    appearance: none;
-    border-top: 2px solid transparent;
-    border-left: 2px solid transparent;
-    outline: none;
-}
 textarea {
     cursor: pointer;
     -webkit-appearance: none;
@@ -449,12 +446,6 @@ textarea {
     border: none;
     border-top: 2px solid var(--Shadow);
     border-left: 2px solid var(--Shadow);
-}
-textarea:focus {
-    appearance: none;
-    border-top: 2px solid transparent;
-    border-left: 2px solid transparent;
-    outline: none;
 }
 button {
     background-color: var(--Oxblood);
@@ -485,4 +476,71 @@ button:hover {
     border-left: 2px solid grey;
     border-bottom: 2px solid black;
     border-right: 2px solid black;
+}
+th{
+    padding: 10px;
+    box-shadow: 5px 5px 2px var(--Shadow);
+    background-color: var(--Oxblood);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom: 2px solid var(--GoldAccentColor);
+    text-align: center;
+}
+td {
+    padding: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-shadow: 5px 5px 2px var(--Shadow);
+    background-color: var(--DarkCrimson);
+    border-bottom: 2px solid var(--Oxblood);
+    text-align: center;
+}
+table {
+    justify-self: center;
+    min-width: fit-content;
+}
+.heading {
+    text-shadow:
+        2px 2px 0 black,
+        5px 5px 2px var(--Shadow)
+    ;
+    margin-top: 10px;
+    font-size: 1.25rem;
+    font-style: italic;
+}
+.heading::before {
+    content: '◈';
+    font-style: normal;
+    position: relative;
+    right: 20px;
+    color: var(--GoldAccentColor);
+}
+.box {
+    padding-top: 25px;
+    padding-bottom: 25px;
+    background-color: var(--DarkCrimson);
+    box-shadow: 5px 5px 2px var(--Shadow);
+    border-radius: 10px;
+    padding: 5px;
+}
+.lexemes {
+    justify-self: center;
+    z-index: 1;
+    height: fit-content;
+    min-height: 100px;
+    padding: 10px;
+    margin: 50px;
+    margin-top: 0;
+    border-radius: 10px;
+    background-image: linear-gradient( 180deg, var(--DarkCrimson), var(--Oxblood));
+    box-shadow: 5px 5px 2px var(--Shadow);
+}
+.lexeme_basics th, .lexeme_basics td {
+    padding: 30px;
+}
+.Wordforms th{
+    padding: 30px;
+}
+.block {
+    width: 20rem;
 }

@@ -14,7 +14,7 @@ URL conventions:
                        grammar_rules scoped by language_id (dialect_id is a filter param)
 """
 
-from flask import Blueprint, request, jsonify, abort, render_template
+from flask import Blueprint, request, jsonify, abort, render_template, redirect, url_for
 from app.models import (
     db,
     Language, Dialect,
@@ -34,17 +34,57 @@ lexicon_bp = Blueprint("lexicon", __name__, url_prefix="/lexicon")
 @lexicon_bp.route("/<int:language_id>", methods=["GET", "POST"])
 def lexemes(language_id):
     """
-    GET  — list all words for a language.
+    GET  — list all lexemes for a language.
            Optional query params: ?dialect_id=, ?pos=, ?register=, ?q= (lemma search)
-    POST — create a new word.
+    POST — create a new lexeme.
     """
 
+    language = Language.query.get_or_404(language_id)
+
+    print(language.lexemes)
+    print(len(language.lexemes))
+
     context = {
-        "language" : Language.query.get_or_404(language_id)
+        "language" : language
     }
+
+    if request.method == "POST" :
+        return redirect( url_for('lexicon.add_lexeme', language_id = language.id))
 
     return render_template('lexicon.html', **context)
 
+@lexicon_bp.route("/<int:language_id>/add_lexeme", methods=["GET", "POST"])
+def add_lexeme(language_id) :
+
+    language = Language.query.get_or_404(language_id)
+
+    context = {
+        "language" : language
+    }
+
+    if request.method == "POST" :
+
+        print(request.form)
+
+        lemma = request.form['lemma']
+        gloss = request.form['gloss']
+        part_of_speech = request.form['part_of_speech']
+        notes = request.form['notes']
+
+        lexeme = Lexeme(
+            lemma=lemma,
+            gloss=gloss,
+            part_of_speech=part_of_speech,
+            notes=notes,
+            language_id=language.id
+        )
+
+        db.session.add(lexeme)
+        db.session.commit()
+
+        return redirect(url_for("lexicon.lexemes", language_id=language.id))
+
+    return render_template("add_lexeme.html", **context)
 
 @lexicon_bp.route("/<int:language_id>/lexeme/<int:lexeme_id>",
                   methods=["GET", "PUT", "PATCH", "DELETE"])
