@@ -90,6 +90,15 @@ def add_lexeme(language_id) :
                   methods=["GET", "PUT", "PATCH", "DELETE"])
 def lexeme(language_id, lexeme_id):
     """Single word — fetch, update, or delete."""
+    if request.method == "DELETE" :
+        language = Language.query.get_or_404(language_id)
+        lexeme = Lexeme.query.get_or_404(lexeme_id)
+        try:
+            db.session.delete(lexeme)
+            db.session.commit()
+            return redirect(url_for("lexicon.lexemes", language_id=language.id))
+        except : 
+            print("There was a problem deleting that Lexeme")
     pass
 
 
