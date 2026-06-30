@@ -108,7 +108,17 @@
                 <td>{{ lexeme.part_of_speech }}</td>
                 <td class="block">{{ lexeme.gloss }}</td>
                 <td>{{ lexeme.lemma }}</td>
-                <td> WIP </td>
+                <td>
+                    {% if lexeme.word_forms | length > 1 %}
+                        {% for word_form in lexeme.word_forms %}
+                            {{ word_form.written_form }}, 
+                        {% endfor %}
+                    {% else %}
+                        {% for word_form in lexeme.word_forms %}
+                            {{ word_form.written_form }}
+                        {% endfor %}
+                    {% endif %}
+                </td>
         </tbody>
         {% endfor %}
     </table>

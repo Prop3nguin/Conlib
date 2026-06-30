@@ -18,7 +18,7 @@ from flask import Blueprint, request, jsonify, abort, render_template, redirect,
 from app.models import (
     db,
     Language, Dialect,
-    Lexeme, Morpheme,
+    Lexeme, WordForm, Morpheme,
     Sense, SemanticField,
     Pronunciation,
     InflectionParadigm,
@@ -86,14 +86,15 @@ def add_lexeme(language_id) :
 
     return render_template("add_lexeme.html", **context)
 
-@lexicon_bp.route("/<int:language_id>/lexeme/<int:lexeme_id>",
-                  methods=["GET", "PUT", "PATCH", "DELETE"])
-def lexeme(language_id, lexeme_id):
+@lexicon_bp.route("/<int:language_id>/<int:lexeme_id>/edit_lexeme", methods=["GET", "POST"])
+def edit_lexeme(language_id, lexeme_id):
+
     """Single word — fetch, update, or delete."""
-    if request.method == "DELETE" :
+
+    if request.method == "POST" :
         language = Language.query.get_or_404(language_id)
         lexeme = Lexeme.query.get_or_404(lexeme_id)
-        try:
+        try :
             db.session.delete(lexeme)
             db.session.commit()
             return redirect(url_for("lexicon.lexemes", language_id=language.id))
@@ -101,6 +102,52 @@ def lexeme(language_id, lexeme_id):
             print("There was a problem deleting that Lexeme")
     pass
 
+@lexicon_bp.route("/<int:word_form_id>/delete_word_form", methods=["POST"])
+def delete_word_form(word_form_id):
+    
+    if request.method == "POST" :
+        word_form = WordForm.query.get_or_404(word_form_id)
+        language_id = word_form.lexeme.language_id
+        try :
+            db.session.delete(word_form)
+            db.session.commit()
+            return redirect(url_for("lexicon.lexemes", language_id=language_id))
+        except :
+            print("There was a problem deleting that Word-Form")
+
+
+@lexicon_bp.route("<int:lexeme_id>/add_word_form", methods=["GET", "POST"])
+def add_word_form(lexeme_id):
+
+    lexeme = Lexeme.query.get_or_404(lexeme_id)
+    language = Language.query.get_or_404(lexeme.language_id)
+
+    context = {
+        "lexeme" : lexeme,
+        "language" : language
+    }
+
+    if request.method == "POST" :
+
+        print(request.form)
+
+        dialect_id = request.form['dialect_id']
+        written_form = request.form['written_form']
+        notes = request.form['notes']
+
+        word_form = WordForm(
+            lexeme_id = lexeme.id,
+            dialect_id = dialect_id,
+            written_form = written_form,
+            notes = notes
+        )
+
+        db.session.add(word_form)
+        db.session.commit()
+
+        return redirect(url_for("lexicon.lexemes", language_id=lexeme.language_id))
+    
+    return render_template("add_word_form.html", **context)
 
 # ===========================================================================
 # Search  (cross-language lexicon search)

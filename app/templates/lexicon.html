@@ -13,11 +13,9 @@
     <div class="divider">✦ ───────── ◈ ───────── ✦</div>
     <ul class="Edit">
         <li>Edit Description</li>
-        <li>Add Script</li>
         <li>
             <a href="{{ url_for('lexicon.add_lexeme', language_id=language.id) }}">Add Lexeme</a>
         </li>
-        <li>Remove Lexeme</li>
         <li>Add Etymology Article / Event</li>
         <li>Add Idiom / Sample Text</li>
     </ul>
@@ -40,14 +38,17 @@
                     <td>{{ lexeme.part_of_speech }}</td>
                 </tbody>
             </table>
+            <form action="{{ url_for( 'lexicon.edit_lexeme', language_id=language.id, lexeme_id=lexeme.id ) }}", method="POST">
+                <button type="submit" onclick="return confirm('are you sure?');">DELETE lexeme</button>
+            </form>    
         </li>
         <li>
+            <p class="heading">Glossary</p>
+            <p class="box">{{ lexeme.gloss }}</p>
             {% if lexeme.notes %}
             <p class="heading">Notes</p>
             <p class="box">{{ lexeme.notes }}</p>
             {% endif %}
-            <p class="heading">Glossary</p>
-            <p class="box">{{ lexeme.gloss }}</p>
         </li>
         <li>
             <p class="heading">Wordforms</p>
@@ -55,10 +56,21 @@
                 <thead>
                     <th>Word Variations</th>
                     <th>Parent Dialect</th>
+                    <th>Delete WordForm</th>
                 </thead>
+                {% for word_form in lexeme.word_forms %}
                 <tbody>
+                    <td>{{ word_form.written_form }}</td>
+                    <td>{{ word_form.dialect.name }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('lexicon.delete_word_form', word_form_id=word_form.id) }}">
+                            <button type="submit" onclick="return confirm('are you sure?');">DELETE</button>
+                        </form>
+                    </td>
                 </tbody>
+                {% endfor %}
             </table>
+            <a href="{{ url_for('lexicon.add_word_form', lexeme_id=lexeme.id) }}">Add Word-Form</a>
         </li>
     </ul>
     {% endfor %}

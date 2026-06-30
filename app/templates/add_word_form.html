@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}
+add a Word-Form
+{% endblock %}
+
+{% block content %}
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h1 class="PageTitle">Create Word-Form</h1>
+<div class="divider">✦ ───────── ◈ ───────── ✦</div>
+<h2 class="TabTitle">Word-Form for {{ lexeme.lemma }}</h2>
+<section>
+    <form method="POST" action="{{ url_for('lexicon.add_word_form', lexeme_id=lexeme.id) }}">
+        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
+        <ul>
+            <li>
+                <label for="written_form">Written form:</label>
+                <input type="text", id="written_form", name="written_form">
+                <br>
+                <label for="dialect_id">Dialect:</label>
+                <select name="dialect_id">
+                    {% for dialect in language.dialects %}
+                    <option value="{{ dialect.id }}">{{ dialect.name }}</option>
+                    {% endfor %}
+                </select>
+            </li>
+            <li>
+                <label for="notes">Additional Notes:</label>
+                <br>
+                <textarea id="notes" name="notes" rows="12", cols="60"></textarea>
+                <br>
+            </li>
+        </ul>
+        <div class="divider">✦ ───────── ◈ ───────── ✦</div>
+        <ul class="Button"><button type="submit" class="submit">Add Word-Form</button></ul>
+    </form>
+</section>
+{% endblock %}

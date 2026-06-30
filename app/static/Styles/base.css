@@ -229,7 +229,8 @@ section {
 .Columns a {
     display: inline-block;
     margin-top: 20px;
-    padding: 10px;
+    padding: 15px;
+    margin: 5px;
     background-color: var(--Oxblood);
     border-radius: 10px;
     box-shadow: 5px 5px 2px var(--Shadow);
@@ -452,16 +453,19 @@ button {
     box-shadow: 5px 5px 2px var(--Shadow);
     border: none;
     border-radius: 10px;
-    padding: 20px;
-    margin: 40px;
+    padding: 15px;
+    margin: 5px;
     transition: 0.3s ease all;
     min-width: 200px;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    color: var(--GoldAccentColor);
 }
 button:hover {
     background-color: var(--Oxblood);
     box-shadow: 7px 7px 7px var(--Shadow);
-    margin: 40px;
     transform: translateY(-5px);
+    color: var(--LightTextColor);
 }
 .Warning {
     color: red;
@@ -505,6 +509,7 @@ table {
         5px 5px 2px var(--Shadow)
     ;
     margin-top: 10px;
+    margin-bottom: 5px;
     font-size: 1.25rem;
     font-style: italic;
 }
@@ -522,6 +527,9 @@ table {
     box-shadow: 5px 5px 2px var(--Shadow);
     border-radius: 10px;
     padding: 5px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    text-shadow: 2px 2px 0 black;
 }
 .lexemes {
     justify-self: center;
